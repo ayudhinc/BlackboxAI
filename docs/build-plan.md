@@ -62,8 +62,8 @@ Ports (claim on day 1 after checking with `lsof`, register in `~/dev/ports.md` i
 
 The Official Rules may require code to start at kickoff, so prepare everything except code.
 
-- [ ] Create the Meta Model API key at dev.meta.ai and confirm access **from your country**: `GET /v1/models` must list `muse-spark-1.3` and `sam-3.1`. Model availability varies by country; this is the one risk that can sink the build before it starts.
-- [ ] Check whether `muse-wonder-1.0` is enabled for the key.
+- [x] Create the Meta Model API key at dev.meta.ai and confirm access **from your country**: `GET /v1/models` must list `muse-spark-1.3` and `sam-3.1`. Model availability varies by country; this is the one risk that can sink the build before it starts. Checked 2026-10-23: HTTP 200, and both are listed. A listing is not a successful call; the day-1 probe makes the first real call to each model.
+- [x] Check whether `muse-wonder-1.0` is enabled for the key. Listed on 2026-10-23. The key also lists `-contributor` variants, which are never used.
 - [x] Read the Official Rules the moment they publish: pre-existing code, open source, team size, video length. Read on 2026-10-23 from the waiver page. They don't mention pre-existing code or video length. See [hackathon.md](hackathon.md).
 - [ ] Reserve names: Neon project, R2 bucket, Fly app, Vercel project. Empty, no code.
 - [x] Write the content the demo needs: the CRM policy (one page, six rules), the ERP policy, and the twelve demo task specs with their seeded failures. See [../demo/](../demo/README.md).
