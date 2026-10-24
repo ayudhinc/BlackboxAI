@@ -37,6 +37,7 @@ Newest last. Each entry states the decision, the reason, and what would reverse 
 - **Decision.** Enter the Startup track under Push the Frontier, software.
 - **Reason.** The judging lens is production robustness, which the architecture targets, and the top prize is larger.
 - **Reverses if.** The Official Rules require incorporation documents or team terms that do not fit.
+- **Superseded 2026-10-23.** The application was submitted on the Indie Developer track. See the entry below.
 
 ## 2026-10-23 — Name: BlackboxAI
 
@@ -50,3 +51,10 @@ Newest last. Each entry states the decision, the reason, and what would reverse 
 - **Decision.** Build the sandbox and native runtime on `mcr.microsoft.com/playwright:v1.64.1-noble`, adding Xvfb, xdotool, ffmpeg, x11vnc, noVNC and AT-SPI packages from Ubuntu's apt.
 - **Reason.** On Ubuntu 24.04, `chromium-browser` only installs the snap, and snaps don't run in Docker. Google Chrome has no Linux arm64 build. The Playwright image is still Ubuntu 24.04 and ships an arm64 Chromium. A pre-kickoff probe showed it recording under Xvfb and showing web content over AT-SPI (build plan, "Before kickoff"). The runtime stays an instrumented Ubuntu image, as the runtime decision above says.
 - **Reverses if.** AT-SPI events from Chrome for Testing prove unusable on day 6. Then try Debian's `chromium` package (`debian:bookworm-slim` is pulled for this) before taking cut 6.
+
+## 2026-10-23 — Track: Indie Developer, as applied
+
+- **Decision.** Enter the Indie Developer track under Push the Frontier, software. This replaces the Startup-track entry above.
+- **Reason.** The founder submitted the application on the Indie Developer track. The Official Rules allow one track per participant and enter a project in one track only, so the docs follow the application. The Startup-track entry was written without checking the submitted form.
+- **Effect on the build.** None on scope: both tracks are scored on the same rubric (Impact 30, Meta AI tooling 25, Demo 25, Technical depth and execution 20). The pitch leads with technical ambition: SAM 3.1 on GUI video, verifying a remote desktop with no DOM, and native-runtime ground truth. Production qualities serve as proof that it works.
+- **Reverses if.** The organisers move the entry to the Startup track at the founder's request.

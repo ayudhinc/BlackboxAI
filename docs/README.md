@@ -2,7 +2,7 @@
 
 BlackboxAI is a flight recorder and verifier for AI agents that operate software through screens. Give it what an agent did, and it returns a step-level verdict with evidence: whether the task was actually completed, where the agent clicked wrong, looped, took a destructive action without confirmation, or touched data it should not have, plus a diff against earlier runs of the same task.
 
-Status as of 2026-10-23: pre-build. Entering the Meta Global AI Developer Hackathon, Startup track. Application due **2026-10-25, 11:59 PM ET**. Build window 2026-10-26 to 2026-11-04.
+Status as of 2026-10-23: pre-build. Entering the Meta Global AI Developer Hackathon, Indie Developer track (the application was submitted on that track). Application due **2026-10-25, 11:59 PM ET**. Build window 2026-10-26 to 2026-11-04.
 
 ## Documents
 
