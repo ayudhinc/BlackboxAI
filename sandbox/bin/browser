@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Open Chromium on a URL with the accessibility tree exposed. A normal window
+# shows the address bar, so the host is visible in the recording. KIOSK=1
+# fills the screen with the page, so page coordinates are screen coordinates.
+# Usage: [KIOSK=1] browser <url>
+set -euo pipefail
+# --no-sandbox: Chromium's own sandbox needs user namespaces, which Docker's
+# default seccomp profile blocks. The container is the isolation boundary, and
+# the browser only loads the local demo apps.
+url="${1:?usage: browser <url>}"
+chromium --no-sandbox --disable-infobars --no-first-run --no-default-browser-check --disable-features=Translate \
+  --force-renderer-accessibility --window-position=0,0 --window-size="${SCREEN_W},${SCREEN_H}" \
+  --user-data-dir=/tmp/chrome-profile ${KIOSK:+--kiosk} "$url" </dev/null >/tmp/chromium.log 2>&1 &
+for _ in $(seq 1 100); do
+  xdotool search --onlyvisible --class chromium >/dev/null 2>&1 && exit 0
+  sleep 0.1
+done
+echo "browser: Chromium window did not appear" >&2
+tail -20 /tmp/chromium.log >&2
+exit 1

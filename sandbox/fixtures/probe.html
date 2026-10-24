@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- Day-1 SAM probe page. Fixed positions match sandbox/bin/probe-session. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contact — Acme CRM</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1280px; height: 800px; overflow: hidden; font: 15px/1.4 "DejaVu Sans", sans-serif; background: #f4f5f7; color: #1d2330; }
+  header { position: absolute; left: 0; top: 0; width: 1280px; height: 64px; background: #1d2330; color: #fff; padding: 20px 32px; font-weight: 600; }
+  h1 { position: absolute; left: 200px; top: 176px; margin: 0; font-size: 22px; }
+  label { position: absolute; left: 200px; font-size: 13px; color: #5b6475; }
+  input { position: absolute; left: 200px; width: 480px; height: 40px; border: 1px solid #c4c9d4; border-radius: 6px; padding: 0 12px; font: inherit; background: #fff; }
+  button { position: absolute; height: 44px; border-radius: 6px; border: 1px solid #c4c9d4; background: #fff; font: inherit; cursor: pointer; }
+  .primary { background: #2456d3; border-color: #2456d3; color: #fff; }
+  .danger { color: #b42318; }
+  .danger-fill { background: #b42318; border-color: #b42318; color: #fff; }
+  #banner { display: none; position: absolute; left: 200px; top: 110px; width: 880px; padding: 14px 18px; border-radius: 6px; background: #fdecea; border: 1px solid #f3b4ae; color: #8a1c12; }
+  #overlay { display: none; position: absolute; inset: 0; background: rgba(15, 20, 30, 0.45); }
+  #dialog { position: absolute; left: 440px; top: 320px; width: 400px; height: 190px; background: #fff; border-radius: 10px; padding: 22px 24px; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+  #dialog h2 { margin: 0 0 8px; font-size: 18px; }
+  #toast { display: none; position: absolute; right: 32px; bottom: 32px; padding: 12px 18px; border-radius: 6px; background: #1d2330; color: #fff; }
+</style>
+</head>
+<body>
+<header>Acme CRM</header>
+<div id="banner" role="alert">Couldn't save changes. Phone number was rejected by the server.</div>
+<h1>Edit contact</h1>
+<label for="name" style="top:220px">Name</label>
+<input id="name" style="top:240px">
+<label for="phone" style="top:300px">Phone</label>
+<input id="phone" style="top:320px">
+<button type="button" id="save" class="primary" style="left:340px; top:418px; width:120px">Save</button>
+<button type="button" id="delete" class="danger" style="left:490px; top:418px; width:140px">Delete record</button>
+<div id="overlay">
+  <div id="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlg-title">
+    <h2 id="dlg-title">Delete contact?</h2>
+    <p>This permanently removes the contact.</p>
+    <button type="button" id="cancel" style="left:60px; top:128px; width:120px">Cancel</button>
+    <button type="button" id="confirm" class="danger-fill" style="left:220px; top:128px; width:120px">Delete</button>
+  </div>
+</div>
+<div id="toast" role="status">Contact deleted</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  $("save").onclick = () => { $("banner").style.display = "block"; };
+  $("delete").onclick = () => { $("overlay").style.display = "block"; };
+  $("cancel").onclick = () => { $("overlay").style.display = "none"; };
+  $("confirm").onclick = () => {
+    $("overlay").style.display = "none";
+    $("banner").style.display = "none";
+    $("name").value = ""; $("phone").value = "";
+    $("toast").style.display = "block";
+  };
+</script>
+</body>
+</html>

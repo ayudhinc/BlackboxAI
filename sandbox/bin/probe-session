@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Day-1 probe: a ~30 s scripted session over the probe page, recorded to
+# /recordings. It moves the cursor, opens and dismisses a confirmation dialog,
+# and triggers an error banner, so SAM has every day-1 phrase to find.
+# Usage: probe-session [name]
+set -euo pipefail
+name="${1:-probe-$(date -u +%Y%m%dT%H%M%SZ)}"
+out="/recordings/${name}.mp4"
+
+KIOSK=1 browser "file:///opt/blackbox/fixtures/probe.html"
+sleep 1.5
+pid=$(record "$out" 10)
+sleep 1
+
+glide() { # glide x y: move the cursor in steps so motion is visible
+  local x=$1 y=$2 cx cy
+  eval "$(xdotool getmouselocation --shell)"; cx=$X; cy=$Y
+  for i in $(seq 1 12); do
+    xdotool mousemove $((cx + (x - cx) * i / 12)) $((cy + (y - cy) * i / 12)); sleep 0.04
+  done
+}
+click_at() { glide "$1" "$2"; sleep 0.4; xdotool click 1; sleep "${3:-1.5}"; }
+
+click_at 330 260            # Name field
+xdotool type --delay 90 "Dana Whitfield"; sleep 1
+click_at 330 340            # Phone field
+xdotool type --delay 90 "+1 415 555 0143"; sleep 1
+click_at 400 440 2.5        # Save -> error banner
+click_at 560 440 2.5        # Delete record -> confirmation dialog
+click_at 560 470 2          # Cancel in the dialog
+click_at 560 440 2.5        # Delete record again
+click_at 720 470 2          # Delete in the dialog
+glide 900 650; sleep 2
+glide 300 600; sleep 2
+
+stop-recording "$pid"
+echo "$out"

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Start recording the display to an H.264 MP4 that SAM accepts. Prints the
+# ffmpeg pid; stop it with `stop-recording <pid>`.
+# Usage: record <out.mp4> [fps]
+set -euo pipefail
+out="${1:?usage: record <out.mp4> [fps]}"
+fps="${2:-10}"
+ffmpeg -loglevel error -y -f x11grab -draw_mouse 1 -framerate "$fps" \
+  -video_size "${SCREEN_W}x${SCREEN_H}" -i "$DISPLAY" \
+  -c:v libx264 -preset veryfast -pix_fmt yuv420p -movflags +faststart "$out" \
+  </dev/null >/tmp/ffmpeg.log 2>&1 &
+echo $!

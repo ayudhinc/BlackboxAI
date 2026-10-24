@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Start the display, window manager and AT-SPI bus, then run the command.
+set -euo pipefail
+
+Xvfb "$DISPLAY" -screen 0 "${SCREEN_W}x${SCREEN_H}x24" -nolisten tcp >/tmp/xvfb.log 2>&1 &
+for _ in $(seq 1 50); do xdpyinfo >/dev/null 2>&1 && break; sleep 0.1; done
+xdpyinfo >/dev/null 2>&1 || { echo "entrypoint: Xvfb did not start" >&2; cat /tmp/xvfb.log >&2; exit 1; }
+
+exec dbus-run-session -- bash -c '
+  openbox >/tmp/openbox.log 2>&1 &
+  /usr/libexec/at-spi-bus-launcher --launch-immediately >/tmp/atspi.log 2>&1 &
+  exec "$@"
+' bash "$@"

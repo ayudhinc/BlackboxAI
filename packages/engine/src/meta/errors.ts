@@ -7,6 +7,7 @@
  */
 export type MetaFailure =
   | "auth"
+  | "billing"
   | "rate_limited"
   | "unavailable"
   | "rejected_request"
@@ -17,6 +18,7 @@ export type MetaFailure =
 
 const PARTY: Record<MetaFailure, "ours" | "provider" | "input"> = {
   auth: "ours",
+  billing: "ours",
   rate_limited: "provider",
   unavailable: "provider",
   rejected_request: "ours",
@@ -49,6 +51,7 @@ export class MetaCallError extends Error {
 /** Classify an HTTP status from the Model API. Media errors are told apart by the caller. */
 export function failureForStatus(status: number): MetaFailure {
   if (status === 401 || status === 403) return "auth";
+  if (status === 402) return "billing"; // the API account has no usable billing; ours to fix
   if (status === 429) return "rate_limited";
   if (status >= 500) return "unavailable";
   return "rejected_request";
