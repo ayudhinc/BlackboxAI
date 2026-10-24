@@ -58,3 +58,10 @@ Newest last. Each entry states the decision, the reason, and what would reverse 
 - **Reason.** The founder submitted the application on the Indie Developer track. The Official Rules allow one track per participant and enter a project in one track only, so the docs follow the application. The Startup-track entry was written without checking the submitted form.
 - **Effect on the build.** None on scope: both tracks are scored on the same rubric (Impact 30, Meta AI tooling 25, Demo 25, Technical depth and execution 20). The pitch leads with technical ambition: SAM 3.1 on GUI video, verifying a remote desktop with no DOM, and native-runtime ground truth. Production qualities serve as proof that it works.
 - **Reverses if.** The organisers move the entry to the Startup track at the founder's request.
+
+## 2026-10-23 — Start the build before kickoff
+
+- **Decision.** Build starts on 2026-10-23, three days before the 2026-10-26 kickoff, on the founder's instruction.
+- **Reason.** The Official Rules, as read on 2026-10-23, don't restrict code written before the event. They require "original work product", solely owned, and they allow open source used under its licence. This is the founder's call; the build plan had defaulted to waiting.
+- **Open risk.** The event page still says the rules "will be published before the Hackathon begins". If a fuller version bans pre-existing code, we may need to start a fresh repo at kickoff or disclose the early start. The git history records the start dates exactly.
+- **Reverses if.** Rules published before kickoff forbid work done before it.

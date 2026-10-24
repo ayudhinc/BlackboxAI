@@ -1,0 +1,28 @@
+{
+  "name": "blackboxai",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.4.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "vitest run",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "db:up": "docker compose up -d postgres",
+    "db:generate": "pnpm --filter @blackbox/db generate",
+    "db:migrate": "pnpm --filter @blackbox/db migrate",
+    "dev:web": "pnpm --filter @blackbox/web dev",
+    "dev:worker": "pnpm --filter @blackbox/worker dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.2",
+    "@types/node": "26.6.5",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

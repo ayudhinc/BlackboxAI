@@ -11,3 +11,5 @@ coverage/
 recordings/
 frames/
 evidence/
+next-env.d.ts
+*.tsbuildinfo

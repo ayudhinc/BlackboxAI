@@ -1,0 +1,20 @@
+{
+  "name": "@blackbox/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "probe:spark": "tsx src/probe-spark.ts",
+    "probe:sam": "tsx src/probe-sam.ts"
+  },
+  "dependencies": {
+    "@blackbox/contracts": "workspace:*",
+    "@blackbox/db": "workspace:*",
+    "@blackbox/engine": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}
