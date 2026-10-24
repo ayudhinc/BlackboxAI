@@ -11,11 +11,15 @@
 | Track | **Startup** ("technical execution and whether it holds up in production") |
 | Theme | **Push the Frontier**, software |
 | Pool | $1M cash. Unofficial split: Startup $250k / $150k / $75k / $50k / $25k |
-| Rubric (unofficial) | Impact 30 · Use of Meta tooling 25 · Demo 25 · Technical depth 20 |
-| Credits | $150 Meta Model API per participant (unofficial); partner credits for select participants |
-| Unknowns | Official Rules publish before Oct 26: pre-existing code, open-source requirement, Startup team size. Assume a fresh repo, started after kickoff. |
+| Rubric (Official Rules) | Impact 30 · Use of Meta AI tooling 25 · Demo 25 · Technical depth and execution 20. Impact includes "whether it fits one of the problem statements"; the problem statements are not published yet. |
+| Credits | $150 Meta Model API per accepted participant, "valid for a 10-day development window", subject to separate Credit Terms. Partner credits for select participants: Baseten $100, Modal $100, Fireworks $25. |
+| Submit to | https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit |
+| Startup track | "Open to technical founders building a product." The Representative "must be an active employee of the startup" and authorised to receive notices and prize payment for it. |
+| Open questions | Pre-existing code: the rules don't mention it. They require the submission to be "original work product", solely owned, and they allow open source used under its licence. Video length and submission format: not stated. Assume a fresh repo, started after kickoff, until this is settled. |
 
 Event page: https://cerebralvalley.ai/e/meta-ai-developer-hackathon
+
+**Official Rules, as read on 2026-10-23.** The event page still says the rules "will be published before the Hackathon begins". Meanwhile, the page at https://cerebralvalley.ai/e/meta-ai-developer-hackathon/waiver, dated 2026-10-13, is titled "Hackathon Terms & Conditions ('Official Rules') and Event Waiver". The facts above come from it. Two more terms in it matter. Entrants keep ownership of their submission but grant the organisers a perpetual, royalty-free licence to use it. And anything shared during the event is treated as non-confidential. Re-read the page at kickoff in case a fuller version appears.
 
 ## Ten-day plan
 

@@ -64,10 +64,11 @@ The Official Rules may require code to start at kickoff, so prepare everything e
 
 - [ ] Create the Meta Model API key at dev.meta.ai and confirm access **from your country**: `GET /v1/models` must list `muse-spark-1.3` and `sam-3.1`. Model availability varies by country; this is the one risk that can sink the build before it starts.
 - [ ] Check whether `muse-wonder-1.0` is enabled for the key.
-- [ ] Read the Official Rules the moment they publish: pre-existing code, open source, team size, video length.
+- [x] Read the Official Rules the moment they publish: pre-existing code, open source, team size, video length. Read on 2026-10-23 from the waiver page. They don't mention pre-existing code or video length. See [hackathon.md](hackathon.md).
 - [ ] Reserve names: Neon project, R2 bucket, Fly app, Vercel project. Empty, no code.
-- [ ] Write the content the demo needs: the CRM policy (one page, six rules), the ERP policy, and the twelve demo task specs with their seeded failures.
-- [ ] Pull base images (Ubuntu, Chromium, noVNC) so day 1 is not spent downloading.
+- [x] Write the content the demo needs: the CRM policy (one page, six rules), the ERP policy, and the twelve demo task specs with their seeded failures. See [../demo/](../demo/README.md).
+- [x] Pull base images (Ubuntu, Chromium, noVNC) so day 1 is not spent downloading. Pulled `ubuntu:24.04`, `mcr.microsoft.com/playwright:v1.64.1-noble` and `debian:bookworm-slim`; `node:24-slim` and `postgres:17` were already present. noVNC comes from apt (`novnc` 1.3.0, `websockify` 0.10.0), not from an image.
+  - Probe, 2026-10-23, arm64 (OrbStack): Ubuntu 24.04's `chromium-browser` is only a stub that installs the snap, which can't run in a container. The Playwright noble image (Ubuntu 24.04.5) ships Chrome for Testing 156.0.8078.4 for arm64. Under Xvfb, that Chromium plus `ffmpeg -f x11grab` produced an H.264 MP4 (1280×800, 30 frames in 3 s). With `--force-renderer-accessibility` inside a D-Bus session, pyatspi read the page's own tree: `entry 'Card number'`, `push button 'Delete'`. Not yet tested: AT-SPI event delivery, as opposed to reading the tree. See the sandbox base decision in [decisions.md](decisions.md).
 
 ## Day by day
 

@@ -44,3 +44,9 @@ Newest last. Each entry states the decision, the reason, and what would reverse 
 - **Reason.** Founder's choice. It names the flight-recorder function directly.
 - **Open risk.** An existing AI coding-assistant company already trades as BLACKBOX.AI at blackbox.ai, with a large user base. Expect confusion in search and app stores, a likely trademark conflict, and no access to the obvious domain. Trademark and domain status are unchecked.
 - **Reverses if.** A trademark search or legal advice shows a conflict, or the name confuses buyers in interviews.
+
+## 2026-10-23 — Sandbox base image: Playwright's Ubuntu 24.04 image, not stock Ubuntu Chromium
+
+- **Decision.** Build the sandbox and native runtime on `mcr.microsoft.com/playwright:v1.64.1-noble`, adding Xvfb, xdotool, ffmpeg, x11vnc, noVNC and AT-SPI packages from Ubuntu's apt.
+- **Reason.** On Ubuntu 24.04, `chromium-browser` only installs the snap, and snaps don't run in Docker. Google Chrome has no Linux arm64 build. The Playwright image is still Ubuntu 24.04 and ships an arm64 Chromium. A pre-kickoff probe showed it recording under Xvfb and showing web content over AT-SPI (build plan, "Before kickoff"). The runtime stays an instrumented Ubuntu image, as the runtime decision above says.
+- **Reverses if.** AT-SPI events from Chrome for Testing prove unusable on day 6. Then try Debian's `chromium` package (`debian:bookworm-slim` is pulled for this) before taking cut 6.

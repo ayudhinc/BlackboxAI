@@ -17,6 +17,7 @@ Status as of 2026-10-23: pre-build. Entering the Meta Global AI Developer Hackat
 | [application.md](application.md) | Application answers, ready to paste |
 | [validation.md](validation.md) | The gate between a hackathon demo and a company |
 | [decisions.md](decisions.md) | Decision log with reasons |
+| [../demo/](../demo/README.md) | Demo content: the twelve task specs, the CRM and ERP surfaces, both policies and their expected compilations |
 
 ## One-paragraph pitch
 
