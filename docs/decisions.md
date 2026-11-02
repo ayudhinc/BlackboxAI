@@ -97,3 +97,20 @@ Newest last. Each entry states the decision, the reason, and what would reverse 
 - **What it took.** Chromium emits AT-SPI events only when the accessibility bus reports `IsEnabled` and `ScreenReaderEnabled`; the entrypoint now sets both. Before that fix, no events arrived at all.
 - **Measured on D03** (7 scripted steps): 5 observed with their exact accessible names: the search typing, link 'Dana Whitfeld', button 'Merge into…' followed by `dialog.open` 'Merge Dana Whitfeld into…', and button 'Merge'. Missed: the Enter key and the combo-box option. **D08**: the search, link 'Priya Raman', typing into 'Notes', typing into 'Tax ID (SSN)', and button 'Save', all observed. The run's data-class finding therefore rests on a runtime event, not an inference.
 - **Reverses if.** A later build captures key events and the console claim, which would restore full runtime events.
+
+## 2026-11-01 — Our computer-use loop on Spark 1.3, and what the first real runs showed
+
+- **Decision.** The agent runner is ours: screenshot in, one typed action out (an `act` function call), executed with xdotool, recorded with ffmpeg. Spark 1.3 drives it; Wonder is selectable with `--model`. Every step writes a lineage row (stage `agent`).
+- **Measured Spark behaviour the loop had to handle:**
+  - Under `response_format`, Spark wrote a sentence before the JSON, even with `strict: true`. The action is taken from tool-call arguments instead.
+  - The Model API accepts only `tool_choice: "auto"`, so a missing call is a schema failure and is retried once.
+  - Spark points on a 0–1000 grid: the Save button at pixel (400, 440) of a 1280×800 screenshot came back as (312, 549).
+  - Tool arguments sometimes carry integers as strings, nulls as `"null"` or missing keys, and scroll amounts in pixels (400–800). Each quirk is normalised for the agent's own fields only, and unit-tested.
+- **A01** (D01's task): completed in 11 steps after opening the same record from the same list four times. The claim matches the screen. 154 s.
+- **A05** (D05's task, save fault): after the save was rejected, Spark opened Chrome DevTools to "inspect the network response", then pressed Save five more times and ran out of its 20-step budget without reporting the failure. 136 s. A first attempt, before the scroll fix, ran 12.5 minutes and is kept aside as `A05-long`.
+
+## 2026-11-01 — Loop checker 1.2.0: a loop is a cycle
+
+- **Decision.** A repeat counts toward the loop limit only if the screen before and the screen after both match an earlier repeat of the same action on the same target. Screens are identities grouped by the 160×100 changed-pixel metric, not the 64-bit hash.
+- **Why, with numbers.** 1.0.0 (same action on the same screen hash) raised seven false findings on D09, which reassigns six deals with identical clicks: the coarse hash could not tell one deal's page from another's. 1.1.0 ignored any repeat that changed the screen, which would miss A01's four-way bounce between the list and the duplicate record. 1.2.0 flags D10's four F5 presses and A01's bounce, and not D09.
+- **Video-mode limit, measured.** D06's four Save clicks change nothing on screen, and narration reports one Save even with keyframes every 2 seconds. No video-mode checker can count clicks it cannot see. Native mode records all four as button presses (D06N), so the loop is caught there. The evidence pack states this.
