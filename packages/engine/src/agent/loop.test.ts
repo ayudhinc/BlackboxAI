@@ -2,7 +2,7 @@ import { expect, describe as group, it } from "vitest";
 import { MetaClient } from "../meta/client.ts";
 import { MemoryLineageSink } from "../meta/lineage.ts";
 import { chatReply, FakeTransport } from "../meta/testing.ts";
-import { type Desktop, runAgent } from "./loop.ts";
+import { type Desktop, runAgent, scrollTicks } from "./loop.ts";
 
 class FakeDesktop implements Desktop {
   readonly width = 1280;
@@ -99,5 +99,15 @@ group("runAgent", () => {
     );
     expect(desktop.calls).toEqual([]);
     expect(result.stoppedBy).toBe("budget");
+  });
+});
+
+group("scrollTicks", () => {
+  it("reads large values as pixels and clamps", () => {
+    expect(scrollTicks(500)).toBe(5);
+    expect(scrollTicks(-300)).toBe(-3);
+    expect(scrollTicks(5000)).toBe(15);
+    expect(scrollTicks(4)).toBe(4);
+    expect(scrollTicks(null)).toBe(3);
   });
 });

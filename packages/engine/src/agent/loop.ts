@@ -23,7 +23,7 @@ export const AgentAction = z.object({
     .describe("click: y on a 0-1000 grid down the screenshot (0 top, 1000 bottom)"),
   text: z.string().nullable().describe("type: the text to type"),
   keys: z.string().nullable().describe("key: xdotool key names, e.g. Return, Tab, F5, ctrl+l"),
-  scrollDy: z.number().int().nullable().describe("scroll: wheel ticks, positive is down"),
+  scrollDy: z.number().int().nullable().describe("scroll: wheel ticks (1 to 10), positive is down"),
   claim: z
     .string()
     .nullable()
@@ -140,7 +140,7 @@ async function execute(desktop: Desktop, a: AgentAction): Promise<void> {
       if (a.keys) await desktop.key(a.keys);
       return;
     case "scroll":
-      await desktop.scroll(a.scrollDy ?? 3);
+      await desktop.scroll(scrollTicks(a.scrollDy));
       return;
     default:
       return;
@@ -161,6 +161,17 @@ export function numericStrings(keys: string[]): (raw: unknown) => unknown {
     }
     return out;
   };
+}
+
+/**
+ * Wheel ticks for a scroll action. Spark has sent pixel amounts (500) where the
+ * schema asks for ticks; anything over 20 is read as pixels at about 100 per
+ * tick, and the result is clamped to 15 ticks either way.
+ */
+export function scrollTicks(dy: number | null): number {
+  if (dy === null || dy === 0) return 3;
+  const ticks = Math.abs(dy) > 20 ? Math.round(dy / 100) || Math.sign(dy) : dy;
+  return Math.max(-15, Math.min(15, ticks));
 }
 
 /** Spark has omitted nullable keys from tool arguments; a missing nullable key means null. */
