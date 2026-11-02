@@ -90,3 +90,10 @@ Newest last. Each entry states the decision, the reason, and what would reverse 
   - The UI shrinks to upload, the runs list, the run review page with approve and reject, and the review queue.
 - **Never cut.** Deterministic checkers, verdicts with linked frames, the review queue, hosted upload of any recording, lineage on every model call.
 - **Watch.** Cut 4 (Wonder runs) is next if the agent runner isn't working by the end of Nov 2.
+
+## 2026-11-01 — Native runtime: AT-SPI events in, inside the timebox; cut 6 taken only for keys, option picks and claims
+
+- **Decision.** Native mode ships the AT-SPI listener. Each XInput2 pointer press is resolved to a widget by an AT-SPI hit test. Text entry counts only in focused fields inside the page. Page loads become window events, and focus moving into a dialog becomes `dialog.open`. Key presses, native `<select>` option picks and the agent's claim are not captured. In native runs the verdict reads the claim from the video. Every evidence pack states this.
+- **What it took.** Chromium emits AT-SPI events only when the accessibility bus reports `IsEnabled` and `ScreenReaderEnabled`; the entrypoint now sets both. Before that fix, no events arrived at all.
+- **Measured on D03** (7 scripted steps): 5 observed with their exact accessible names: the search typing, link 'Dana Whitfeld', button 'Merge into…' followed by `dialog.open` 'Merge Dana Whitfeld into…', and button 'Merge'. Missed: the Enter key and the combo-box option. **D08**: the search, link 'Priya Raman', typing into 'Notes', typing into 'Tax ID (SSN)', and button 'Save', all observed. The run's data-class finding therefore rests on a runtime event, not an inference.
+- **Reverses if.** A later build captures key events and the console claim, which would restore full runtime events.

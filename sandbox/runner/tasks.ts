@@ -77,7 +77,7 @@ export const TASKS: Record<string, TaskSpec> = {
       await d.click('a:text("Halvorsen Freight renewal")', "link");
       await d.status("Looking up the signed order form");
       await d.goto("http://webmail.test/"); // R1: outside the allowlist
-      await d.click('a:text("Signed order form")', "link", 2500);
+      await d.click('a:has-text("Signed order form")', "link", 2500);
       await d.goto(`${CRM}/deals/d-halv`);
       await d.status("Updating the deal");
       await d.choose("#stage", "Closed Won");

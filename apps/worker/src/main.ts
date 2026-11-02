@@ -4,19 +4,39 @@
  * registered in ~/dev/ports.md).
  */
 import { createServer } from "node:http";
-import { hostname } from "node:os";
+import { hostname, tmpdir } from "node:os";
+import { join } from "node:path";
 import { connect } from "@blackbox/db";
+import {
+  createMetaTransport,
+  DbLineageSink,
+  MetaClient,
+  processRun,
+  runCompilePolicy,
+  storeFromEnv,
+} from "@blackbox/engine";
 import { sql } from "drizzle-orm";
 import { claimJob, completeJob, failJob, type Job, requeueStale } from "./jobs.ts";
 
 type Handler = (job: Job) => Promise<void>;
 
-/** Job kinds the worker can run. A job of any other kind fails loudly. */
-const handlers: Record<string, Handler> = {};
-
 const port = Number(process.env.WORKER_HEALTH_PORT ?? 3502);
 const workerId = `${hostname()}:${process.pid}`;
 const { db, close } = connect();
+const lineage = new DbLineageSink(db);
+const client = new MetaClient(createMetaTransport(), lineage);
+const store = storeFromEnv();
+const workRoot = join(tmpdir(), "blackbox-work");
+
+/** Job kinds the worker can run. A job of any other kind fails loudly. */
+const handlers: Record<string, Handler> = {
+  process_run: (job) =>
+    processRun(
+      { db, client, lineage, store, workRoot, log: (m) => console.log(`[${job.subjectId}] ${m}`) },
+      job.subjectId,
+    ),
+  compile_policy: (job) => runCompilePolicy(db, client, store, job.subjectId),
+};
 let lastPoll: string | null = null;
 let stopping = false;
 

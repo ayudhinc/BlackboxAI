@@ -21,7 +21,7 @@ export class LocalBlobStore implements BlobStore {
     return p;
   }
 
-  async put(key: string, body: Uint8Array | string): Promise<void> {
+  async put(key: string, body: Uint8Array | string, _contentType?: string): Promise<void> {
     const p = this.path(key);
     await mkdir(dirname(p), { recursive: true });
     await writeFile(p, body);
