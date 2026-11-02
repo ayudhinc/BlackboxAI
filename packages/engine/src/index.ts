@@ -9,6 +9,15 @@ export {
   REVIEW_BELOW_CONFIDENCE,
   runChecks,
 } from "./check/checkers.ts";
+export type { EvidencePack } from "./evidence/pack.ts";
+export {
+  COVERAGE_NOTES,
+  canonicalJson,
+  EVIDENCE_FORMAT,
+  renderEvidenceHtml,
+  sealEvidence,
+  verifyEvidence,
+} from "./evidence/pack.ts";
 export type { IngestResult } from "./ingest/ingest.ts";
 export { CHUNK_MS, FRAME_MS, ingest, SAMPLE_FPS } from "./ingest/ingest.ts";
 export type { VideoInfo } from "./ingest/probe.ts";
@@ -42,6 +51,8 @@ export { InputError, processRun, TRACK_PHRASES, userFacing } from "./pipeline/pr
 export * from "./pipeline/repo.ts";
 export type { CompiledPolicy, PolicyDocument } from "./policy/compile.ts";
 export { compilePolicy, resolveRule, toRules } from "./policy/compile.ts";
+export type { RegressionDiff, RunSnapshot } from "./regress/regress.ts";
+export { regress } from "./regress/regress.ts";
 export type { BlobStore } from "./store/blob.ts";
 export { defaultLocalStore, keys, LocalBlobStore } from "./store/blob.ts";
 export { tracksFromSam } from "./track/sam-tracks.ts";
