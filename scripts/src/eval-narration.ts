@@ -8,7 +8,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { connect, schema } from "@blackbox/db";
 import { loadSteps, scoreNarration, type TruthStep } from "@blackbox/engine";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, like } from "drizzle-orm";
 import { loadEnv, ROOT } from "./env.ts";
 
 loadEnv();
@@ -30,10 +30,12 @@ try {
     };
     if (meta.mode !== "video") continue;
     const run = await db.query.runs.findFirst({
+      // Scripted runs only: agent runs can share a task's text but have no ground truth.
       where: and(
         eq(schema.runs.task, meta.instruction),
         eq(schema.runs.mode, "video"),
         eq(schema.runs.status, "done"),
+        like(schema.runs.agentModel, "scripted@%"),
       ),
       orderBy: desc(schema.runs.createdAt),
     });

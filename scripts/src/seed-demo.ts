@@ -59,8 +59,13 @@ try {
       policyId,
       status: "uploaded",
       recordingKey: keys.recording(runId),
-      // The sandbox's agent console strip (bottom 40 px) is the agent's own UI, not the application.
-      overlays: [{ label: "agent console", box: [0, 760, 1280, 800] }],
+      // Not the application's screen: the agent's console strip (bottom 40 px) and the browser's own
+      // tab strip and toolbar (top 88 px; its loading spinner and URL flicker on every form post).
+      // Masked from screen identity only; narration still sees the whole frame.
+      overlays: [
+        { label: "agent console", box: [0, 760, 1280, 800] },
+        { label: "browser toolbar", box: [0, 0, 1280, 88] },
+      ],
     });
     await enqueueJob(db, "process_run", runId);
     console.log(`${id} -> ${runId} (${native ? "native" : "video"})`);
