@@ -1,0 +1,11 @@
+**/node_modules
+**/.next
+.data
+recordings
+frames
+evidence
+.env
+.env.*
+!.env.example
+.git
+sandbox/node_modules

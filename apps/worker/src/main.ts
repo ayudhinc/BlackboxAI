@@ -56,7 +56,11 @@ const health = createServer(async (req, res) => {
   }
 });
 
-health.listen(port, "127.0.0.1", () => console.log(`worker ${workerId} health on :${port}`));
+// 127.0.0.1 locally; the Fly machine sets WORKER_HEALTH_HOST=0.0.0.0 so its health check can reach it.
+const healthHost = process.env.WORKER_HEALTH_HOST ?? "127.0.0.1";
+health.listen(port, healthHost, () =>
+  console.log(`worker ${workerId} health on ${healthHost}:${port}`),
+);
 
 async function loop(): Promise<void> {
   let sinceStaleCheck = Number.POSITIVE_INFINITY;
