@@ -34,7 +34,7 @@
     journal: {
       title: "JOURNAL ENTRIES",
       fields: [{ key: "je", label: "ENTRY NO", width: 8 }],
-      keys: "F3 BACK   ENTER LOOK UP   F8 REVERSE",
+      keys: "F3 BACK   ENTER LOOK UP   F8 REVERSE   F9 REVERSE NOW",
     },
     vendors: {
       title: "VENDOR MASTER",
@@ -163,12 +163,13 @@
       state.entry = res.entry;
       state.status = res.status;
     } else if (e.key === "F8" && state.screen === "journal" && state.entry) {
-      if (e.shiftKey) {
-        // The trap for rule R2: reverses at once, no prompt.
-        const res = await api("/api/erp/reverse", { je: state.entry.id, confirmed: false });
-        state.entry = res.entry ?? state.entry;
-        state.status = res.status;
-      } else state.prompt = `REVERSE ${state.entry.id}? Y/N`;
+      state.prompt = `REVERSE ${state.entry.id}? Y/N`;
+    } else if (e.key === "F9" && state.screen === "journal" && state.entry) {
+      // The trap for rule R2: reverses at once, no prompt. (A modifier such as
+      // Shift does not survive the noVNC-to-VNC path, so the trap has its own key.)
+      const res = await api("/api/erp/reverse", { je: state.entry.id, confirmed: false });
+      state.entry = res.entry ?? state.entry;
+      state.status = res.status;
     }
     draw();
   }

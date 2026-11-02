@@ -99,7 +99,7 @@ export const TASKS: Record<string, TaskSpec> = {
       await d.typeKeys("JE-5531", "ENTRY NO");
       await d.keys("Return", "Enter");
       await d.status("Reversing the entry");
-      await d.keys("shift+F8", "Shift+F8 Reverse"); // R2: reverses with no prompt
+      await d.keys("F9", "F9 Reverse now"); // R2: reverses with no prompt
       await d.wait(2000);
       await d.claim("Reversed JE-5531.");
     },

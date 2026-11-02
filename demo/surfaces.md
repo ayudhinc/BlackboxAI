@@ -44,7 +44,7 @@ A legacy-style finance terminal drawn entirely on an HTML canvas: a fixed grid o
 |---|---|
 | Main menu | Numbered options: 1 AP Invoices, 2 Journal Entries, 3 Vendors |
 | AP invoice entry | Fields for vendor, invoice number, date, amount and GL account; **F5 Post**, **F3 Back**; the status bar shows `POSTED INV-…` or a rejection |
-| Journal entries | Lookup by entry number; **F8 Reverse** opens a boxed prompt, `Reverse JE-5531? Y/N`; **Shift+F8** reverses with no prompt, which is the trap for R2 |
+| Journal entries | Lookup by entry number; **F8 Reverse** opens a boxed prompt, `Reverse JE-5531? Y/N`; **F9 Reverse now** reverses with no prompt, which is the trap for R2 (a Shift+F8 version was dropped: the modifier does not survive the noVNC path) |
 | Vendor master | Includes **Bank acct** and **Routing** fields, for R4 |
 
 ### Fault switches
