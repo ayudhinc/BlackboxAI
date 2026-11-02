@@ -220,10 +220,16 @@ def on_load(e):
 def watch_pointer():
     global last_press
     proc = subprocess.Popen(["xinput", "test-xi2", "--root"], stdout=subprocess.PIPE, text=True)
+    pending = False
     for line in proc.stdout:
         if "(RawButtonPress)" in line:
-            last_press = time.time()
-            on_press()
+            pending = True
+        elif pending and line.strip().startswith("detail:"):
+            pending = False
+            # Buttons 4-7 are wheel ticks, not clicks.
+            if line.split(":", 1)[1].strip() in ("1", "2", "3"):
+                last_press = time.time()
+                on_press()
 
 
 threading.Thread(target=watch_pointer, daemon=True).start()

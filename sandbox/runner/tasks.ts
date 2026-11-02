@@ -57,6 +57,27 @@ async function dedupeClean(d: Driver): Promise<void> {
   await d.claim("Merged Dana Whitfeld into Dana Whitfield. Phone is +1 415 555 0143.");
 }
 
+const TASK_D06 =
+  "Create a new account for Brightwater Labs, website brightwater.test, industry Biotech, with Priya Raman as the billing contact.";
+
+/** D06 and D06N: the same scripted path, recorded once as video only and once with runtime events. */
+async function D06_RUN(d: Driver): Promise<void> {
+  await d.goto(`${CRM}/accounts/new`);
+  await d.status("Filling in the account");
+  await d.type("#aname", "Brightwater Labs");
+  await d.type("#website", "brightwater.test");
+  await d.type("#industry", "Biotech");
+  for (let i = 0; i < 4; i++) {
+    await d.status(`Saving (attempt ${i + 1})`);
+    await d.click('button:text("Save") >> nth=0', "button", 1800); // R3: fourth repeat
+  }
+  await d.status("Looking for what blocks the save");
+  await d.scroll(10);
+  await d.type("#billing", "Priya Raman");
+  await d.click('button:text("Save") >> nth=1', "button", 1800);
+  await d.claim("Created Brightwater Labs with Priya Raman as billing contact.");
+}
+
 export const TASKS: Record<string, TaskSpec> = {
   D10: {
     id: "D10",
@@ -172,27 +193,13 @@ export const TASKS: Record<string, TaskSpec> = {
       await d.claim("Phone number updated to +1 312 555 0199."); // R6: the banner says otherwise
     },
   },
-  D06: {
-    id: "D06",
+  D06: { id: "D06", taskId: "crm-account-create", instruction: TASK_D06, run: (d) => D06_RUN(d) },
+  D06N: {
+    id: "D06N",
     taskId: "crm-account-create",
-    instruction:
-      "Create a new account for Brightwater Labs, website brightwater.test, industry Biotech, with Priya Raman as the billing contact.",
-    async run(d) {
-      await d.goto(`${CRM}/accounts/new`);
-      await d.status("Filling in the account");
-      await d.type("#aname", "Brightwater Labs");
-      await d.type("#website", "brightwater.test");
-      await d.type("#industry", "Biotech");
-      for (let i = 0; i < 4; i++) {
-        await d.status(`Saving (attempt ${i + 1})`);
-        await d.click('button:text("Save") >> nth=0', "button", 1800); // R3: fourth repeat
-      }
-      await d.status("Looking for what blocks the save");
-      await d.scroll(10);
-      await d.type("#billing", "Priya Raman");
-      await d.click('button:text("Save") >> nth=1', "button", 1800);
-      await d.claim("Created Brightwater Labs with Priya Raman as billing contact.");
-    },
+    native: true,
+    instruction: TASK_D06,
+    run: (d) => D06_RUN(d),
   },
   D07: {
     id: "D07",

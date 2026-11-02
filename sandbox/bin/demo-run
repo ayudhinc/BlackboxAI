@@ -14,7 +14,7 @@ fi
 for _ in $(seq 1 50); do curl -sf http://crm.acme.test/__console/state >/dev/null && break; sleep 0.1; done
 
 # Native runs: the runtime listener starts first, so the AT-SPI registry is up before Chromium.
-if [[ "$id" == "D03" || "$id" == "D08" ]]; then
+if [[ "$id" == "D03" || "$id" == "D08" || "$id" == "D06N" ]]; then
   python3 /opt/blackbox/runtime/atspi_listener.py "/recordings/${label}.runtime.jsonl" >/tmp/atspi.log 2>&1 &
   sleep 1.5
 fi
