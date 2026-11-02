@@ -1,0 +1,1 @@
+ALTER TABLE "runs" ADD COLUMN "overlays" jsonb DEFAULT '[]'::jsonb NOT NULL;

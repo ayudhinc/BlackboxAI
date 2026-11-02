@@ -69,6 +69,25 @@ describe("native event mapping", () => {
     expect(steps[0]?.app).toBe("Contacts — Acme CRM");
   });
 
+  it("ignores the browser's own windows and uses window titles as screens (D06N: four Saves, same page)", () => {
+    const w = "New account — Acme CRM - Google Chrome for Testing";
+    const lines = [
+      { tMs: 10, pid: 1, window: "Omnibox Popup", event: "window.focus" },
+      ...[1000, 3000, 5000, 7000].flatMap((t) => [
+        { tMs: t, pid: 1, window: w, event: "button.press", role: "push button", name: "Save" },
+        { tMs: t + 50, pid: 1, window: "New account — Acme CRM", event: "window.focus" },
+      ]),
+    ];
+    const events = parseRuntimeJsonl("run_1", lines.map((l) => JSON.stringify(l)).join("\n"));
+    const { steps } = mapRuntimeEvents("run_1", events, signatures, 500);
+    expect(steps.some((s) => s.app === "Omnibox Popup")).toBe(false);
+    const saves = steps.filter((s) => s.target.includes("Save"));
+    expect(saves).toHaveLength(4);
+    expect(new Set(saves.map((s) => `${s.screenSignature}>${s.screenAfter}`))).toEqual(
+      new Set(["window:New account — Acme CRM>window:New account — Acme CRM"]),
+    );
+  });
+
   it("rejects a malformed line with its line number", () => {
     expect(() => parseRuntimeJsonl("run_1", '{"tMs":0}\n')).toThrow(/line 1/);
   });

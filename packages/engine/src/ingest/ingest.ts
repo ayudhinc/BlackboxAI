@@ -46,7 +46,13 @@ export type IngestResult = {
   chunks: Chunk[];
 };
 
-export async function ingest(recordingPath: string, workDir: string): Promise<IngestResult> {
+export type Overlay = { label: string; box: [number, number, number, number] };
+
+export async function ingest(
+  recordingPath: string,
+  workDir: string,
+  overlays: Overlay[] = [],
+): Promise<IngestResult> {
   const info = await probeVideo(recordingPath);
   const framesDir = join(workDir, "frames");
   await mkdir(framesDir, { recursive: true });
@@ -63,8 +69,20 @@ export async function ingest(recordingPath: string, workDir: string): Promise<In
   const frameCount = (await readdir(framesDir)).filter((f) => f.endsWith(".jpg")).length;
   if (frameCount === 0) throw new Error("The recording produced no frames.");
 
-  const thumbs = await grayThumbs(recordingPath, THUMB_W, THUMB_H);
-  const diffThumbs = await grayThumbs(recordingPath, DIFF_W, DIFF_H);
+  const thumbs = maskOverlays(
+    await grayThumbs(recordingPath, THUMB_W, THUMB_H),
+    THUMB_W,
+    THUMB_H,
+    info,
+    overlays,
+  );
+  const diffThumbs = maskOverlays(
+    await grayThumbs(recordingPath, DIFF_W, DIFF_H),
+    DIFF_W,
+    DIFF_H,
+    info,
+    overlays,
+  );
   if (thumbs.length !== frameCount || diffThumbs.length !== frameCount) {
     throw new Error(
       `Frame count mismatch: ${frameCount} JPEGs, ${thumbs.length} and ${diffThumbs.length} thumbnails.`,
@@ -119,6 +137,36 @@ export async function ingest(recordingPath: string, workDir: string): Promise<In
     },
     chunks,
   };
+}
+
+/**
+ * Blank the agent's own UI in each thumbnail, so its changing status text does
+ * not make every frame a new screen or a keyframe.
+ */
+export function maskOverlays(
+  thumbs: Uint8Array[],
+  w: number,
+  h: number,
+  video: { width: number; height: number },
+  overlays: Overlay[],
+): Uint8Array[] {
+  if (overlays.length === 0) return thumbs;
+  const sx = w / video.width;
+  const sy = h / video.height;
+  const rects = overlays.map(({ box: [l, t, r, b] }) => [
+    Math.max(0, Math.floor(l * sx)),
+    Math.max(0, Math.floor(t * sy)),
+    Math.min(w, Math.ceil(r * sx)),
+    Math.min(h, Math.ceil(b * sy)),
+  ]);
+  return thumbs.map((thumb) => {
+    const out = thumb.slice();
+    for (const [l, t, r, b] of rects) {
+      for (let y = t as number; y < (b as number); y++)
+        out.fill(0, y * w + (l as number), y * w + (r as number));
+    }
+    return out;
+  });
 }
 
 /** Decode the recording at SAMPLE_FPS into grayscale thumbnails of one size. */

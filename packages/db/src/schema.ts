@@ -83,6 +83,10 @@ export const runs = pgTable(
     recordingKey: text("recording_key"),
     durationMs: integer("duration_ms").notNull().default(0),
     agentClaim: text("agent_claim"),
+    overlays: jsonb("overlays")
+      .$type<Array<{ label: string; box: [number, number, number, number] }>>()
+      .notNull()
+      .default([]),
     failure: text("failure"),
     createdAt: createdAt(),
   },

@@ -62,7 +62,7 @@ export async function processRun(deps: PipelineDeps, runId: string): Promise<voi
     await store.download(keys.recording(runId), recording);
     let media: Awaited<ReturnType<typeof ingest>>;
     try {
-      media = await ingest(recording, workDir);
+      media = await ingest(recording, workDir, run.overlays);
     } catch (error) {
       throw new InputError(`The recording could not be read: ${(error as Error).message}`);
     }

@@ -19,6 +19,9 @@ export function parseRuntimeJsonl(runId: string, jsonl: string): RuntimeEvent[] 
     .sort((a, b) => a.tMs - b.tMs);
 }
 
+/** Browser UI that raises window events but is not an application (the address bar's suggestion list). */
+const BROWSER_UI_WINDOWS = new Set(["Omnibox Popup"]);
+
 /** Window titles carry the browser's name after the page title; the page title is the app. */
 export function windowTitle(window: string): string {
   return window.replace(/\s+-\s+(Google Chrome for Testing|Google Chrome|Chromium)$/, "");
@@ -58,8 +61,9 @@ export function mapRuntimeEvents(
       field,
       observedAfter: "",
       dialogOpened: false,
-      screenSignature: signatures[before] ?? null,
-      screenAfter: signatures[Math.min(frame + 1, signatures.length - 1)] ?? null,
+      // Native screens are windows: the page title the action happened in, and the one it led to.
+      screenSignature: `window:${app}`,
+      screenAfter: null, // filled in below, once later events are known
       madeProgress: null,
       source: "native",
       confidence: 1,
@@ -69,7 +73,8 @@ export function mapRuntimeEvents(
     });
   };
 
-  for (const e of events) {
+  const relevant = events.filter((e) => !BROWSER_UI_WINDOWS.has(windowTitle(e.window)));
+  for (const e of relevant) {
     switch (e.event) {
       case "window.focus":
         if (windowTitle(e.window) !== app) push(e, "navigate", `window ${windowTitle(e.window)}`);
@@ -100,6 +105,14 @@ export function mapRuntimeEvents(
       default:
         break; // dialog.close, file.write, net.request: recorded, not steps
     }
+  }
+  // The screen after an action: the window a focus event within 2 s moved to, else the same window.
+  for (const step of steps) {
+    const next = relevant.find(
+      (e) => e.event === "window.focus" && e.tMs > step.tMs && e.tMs - step.tMs <= 2000,
+    );
+    step.screenAfter = `window:${next ? windowTitle(next.window) : step.app}${step.dialogOpened ? "+dialog" : ""}`;
+    step.madeProgress = step.screenAfter !== step.screenSignature;
   }
   return { steps, agentClaim };
 }

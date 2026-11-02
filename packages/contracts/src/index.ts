@@ -30,6 +30,9 @@ export const RunStatus = z.enum([
 ]);
 export type RunStatus = z.infer<typeof RunStatus>;
 
+export const Box = z.tuple([z.number(), z.number(), z.number(), z.number()]); // left, top, right, bottom (half-open)
+export type Box = z.infer<typeof Box>;
+
 export const Run = z.object({
   id,
   taskId: id, // groups runs of the same task for regression
@@ -42,13 +45,12 @@ export const Run = z.object({
   recordingKey: z.string().nullable(), // object-storage key of the MP4
   durationMs: ms,
   agentClaim: z.string().nullable(), // what the agent said it did, when known
+  /** Screen regions that belong to the agent's own UI (a console strip, a side panel): excluded from screen identity. */
+  overlays: z.array(z.object({ label: z.string(), box: Box })),
   failure: z.string().nullable(), // why the run failed, in user-facing words
   createdAt: iso,
 });
 export type Run = z.infer<typeof Run>;
-
-export const Box = z.tuple([z.number(), z.number(), z.number(), z.number()]); // left, top, right, bottom (half-open)
-export type Box = z.infer<typeof Box>;
 
 export const UiTrack = z.object({
   runId: id,

@@ -91,3 +91,17 @@ describe("screenIdentities", () => {
     ]);
   });
 });
+
+describe("maskOverlays", () => {
+  it("blanks the agent's own UI so its status text does not change the screen", async () => {
+    const { maskOverlays } = await import("./ingest.ts");
+    const a = new Uint8Array(DIFF_W * DIFF_H).fill(200);
+    const b = a.slice();
+    b[(DIFF_H - 2) * DIFF_W + 10] = 0; // a change inside the bottom strip
+    const [ma, mb] = maskOverlays([a, b], DIFF_W, DIFF_H, { width: 1280, height: 800 }, [
+      { label: "agent console", box: [0, 760, 1280, 800] },
+    ]);
+    expect(changedPixels(ma as Uint8Array, mb as Uint8Array, 16)).toBe(0);
+    expect(changedPixels(a, b, 16)).toBe(1);
+  });
+});

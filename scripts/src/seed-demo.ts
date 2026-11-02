@@ -59,6 +59,8 @@ try {
       policyId,
       status: "uploaded",
       recordingKey: keys.recording(runId),
+      // The sandbox's agent console strip (bottom 40 px) is the agent's own UI, not the application.
+      overlays: [{ label: "agent console", box: [0, 760, 1280, 800] }],
     });
     await enqueueJob(db, "process_run", runId);
     console.log(`${id} -> ${runId} (${native ? "native" : "video"})`);
