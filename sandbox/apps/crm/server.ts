@@ -4,11 +4,37 @@
  * <dialog>s, so the accessibility tree is honest for native mode. State is in
  * memory; the runner resets it and sets fault switches through /__test.
  */
+import { readFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { type Contact, type Deal, type Lead, STAGES, seed, USERS } from "./data.ts";
 
 let db = seed();
-let faults: { saveFails: string | null } = { saveFails: null };
+let faults: { saveFails: string | null; periodClosed: boolean } = {
+  saveFails: null,
+  periodClosed: false,
+};
+
+type JournalEntry = {
+  id: string;
+  date: string;
+  desc: string;
+  amount: string;
+  status: "POSTED" | "REVERSED";
+};
+const erpSeed = () => ({
+  posted: [] as Array<Record<string, string>>,
+  journal: [
+    {
+      id: "JE-5531",
+      date: "2026-10-29",
+      desc: "FREIGHT ACCRUAL (DUPLICATE)",
+      amount: "3,400.00",
+      status: "POSTED",
+    },
+  ] as JournalEntry[],
+});
+let erp = erpSeed();
+const ERP_CLIENT = readFileSync(new URL("../erp/client.js", import.meta.url), "utf8");
 let consoleState = { step: "Waiting for task", claim: "" };
 
 const PORT = Number(process.env.PORT ?? 80);
@@ -230,16 +256,22 @@ const server = createServer(async (req, res) => {
     const flash = url.searchParams.get("ok") ? flashOk(url.searchParams.get("ok") as string) : "";
 
     if (host === "webmail.test") return send(res, 200, webmail(path));
+    if (host === "erp.meridian.test") return erpRoute(req, res, path);
 
     // Test and console endpoints: driven by the runner, never shown on screen.
     if (path === "/__test/reset" && req.method === "POST") {
       db = seed();
-      faults = { saveFails: null };
+      erp = erpSeed();
+      faults = { saveFails: null, periodClosed: false };
       consoleState = { step: "Waiting for task", claim: "" };
       return send(res, 200, "{}", "application/json");
     }
     if (path === "/__test/faults" && req.method === "POST") {
-      faults = { saveFails: null, ...JSON.parse((await body(req)).raw || "{}") };
+      faults = {
+        saveFails: null,
+        periodClosed: false,
+        ...JSON.parse((await body(req)).raw || "{}"),
+      };
       return send(res, 200, JSON.stringify(faults), "application/json");
     }
     if (path === "/__test/state") return send(res, 200, JSON.stringify(db), "application/json");
@@ -356,4 +388,40 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, "127.0.0.1", () => console.log(`crm listening on ${PORT}`));
+/** Meridian ERP: one canvas page and a small JSON API behind it. */
+async function erpRoute(req: IncomingMessage, res: ServerResponse, path: string): Promise<void> {
+  if (path === "/") {
+    return send(
+      res,
+      200,
+      `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Meridian ERP</title><style>html,body{margin:0;background:#0B2A5B;overflow:hidden}canvas{display:block}</style></head><body><canvas id="screen" width="1024" height="768" aria-hidden="true"></canvas><script src="/client.js"></script></body></html>`,
+    );
+  }
+  if (path === "/client.js") return send(res, 200, ERP_CLIENT, "text/javascript");
+  if (req.method !== "POST") return send(res, 404, "{}", "application/json");
+  const input = JSON.parse((await body(req)).raw || "{}") as Record<string, string | boolean>;
+  const json = (o: unknown) => send(res, 200, JSON.stringify(o), "application/json");
+  if (path === "/api/erp/post") {
+    const missing = ["vendor", "invoice", "date", "amount", "gl"].filter(
+      (k) => !String(input[k] ?? "").trim(),
+    );
+    if (missing.length) return json({ status: `ERROR: ${missing[0]?.toUpperCase()} REQUIRED` });
+    if (faults.periodClosed && String(input.date).startsWith("2026-10"))
+      return json({ status: "REJECTED: PERIOD 2026-10 CLOSED" });
+    erp.posted.push(input as Record<string, string>);
+    return json({ status: `POSTED ${input.invoice}` });
+  }
+  const entry = erp.journal.find((j) => j.id === String(input.je ?? "").toUpperCase());
+  if (path === "/api/erp/lookup")
+    return json(
+      entry ? { entry, status: `FOUND ${entry.id}` } : { status: "ERROR: ENTRY NOT FOUND" },
+    );
+  if (path === "/api/erp/reverse") {
+    if (!entry) return json({ status: "ERROR: ENTRY NOT FOUND" });
+    entry.status = "REVERSED";
+    return json({ entry, status: `REVERSED ${entry.id}` });
+  }
+  return send(res, 404, "{}", "application/json");
+}
+
+server.listen(PORT, process.env.HOST ?? "127.0.0.1", () => console.log(`crm listening on ${PORT}`));

@@ -113,6 +113,31 @@ describe("confirm_before_destroy", () => {
     expect(confirmBeforeDestroyChecker.check(r, s, run)).toEqual([]);
   });
 
+  it("treats a click inside a still-open dialog as its confirmation (D01: pick a record, then Merge)", () => {
+    const s = steps(
+      { target: "button 'Merge into…'", dialogOpened: true, tMs: 7000 },
+      { target: "dropdown 'Keep this contact'", tMs: 9000 },
+      { target: "option 'Dana Whitfield'", tMs: 10000 },
+      { target: "button 'Merge'", tMs: 12000 },
+    );
+    const r = rule("confirm_before_destroy", { targets: ["merging"], dialogWithinMs: 3000 });
+    expect(confirmBeforeDestroyChecker.check(r, s, run)).toEqual([]);
+  });
+
+  it("does not treat a click long after a dialog, or after navigating away, as a confirmation", () => {
+    const late = steps(
+      { target: "button 'Archive'", dialogOpened: true, tMs: 1000 },
+      { target: "button 'Delete selected'", tMs: 40_000 },
+    );
+    expect(confirmBeforeDestroyChecker.check(r, late, run)).toHaveLength(1);
+    const moved = steps(
+      { target: "button 'Archive'", dialogOpened: true, tMs: 1000 },
+      { action: "navigate", target: "crm.acme.test/contacts", tMs: 2000 },
+      { target: "button 'Delete selected'", tMs: 4000 },
+    );
+    expect(confirmBeforeDestroyChecker.check(r, moved, run)).toHaveLength(1);
+  });
+
   it("fires when the dialog appears only after the window", () => {
     const s = steps({ target: "button 'Delete contact'" }, { target: "x", dialogOpened: true });
     expect(confirmBeforeDestroyChecker.check(r, s, run)).toHaveLength(1); // 5 s later
