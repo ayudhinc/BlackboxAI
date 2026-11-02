@@ -49,6 +49,14 @@ describe("toRules", () => {
     expect(rule?.clarification).toMatch(/loop limit/);
   });
 
+  it("accepts an allowlist given only by host", () => {
+    const [rule] = toRules("pol_1", {
+      title: "CRM",
+      rules: [{ ...base, type: "app_allowlist", hosts: ["crm.acme.test"] }],
+    });
+    expect(rule).toMatchObject({ status: "ready", params: { hosts: ["crm.acme.test"] } });
+  });
+
   it("keeps the model's question when it asks one", () => {
     const [rule] = toRules("pol_2", {
       title: "ERP",

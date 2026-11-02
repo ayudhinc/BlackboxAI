@@ -55,10 +55,12 @@ export const CompiledPolicy = z.object({
 export type CompiledPolicy = z.infer<typeof CompiledPolicy>;
 
 const PARAMS: Record<Rule["type"], z.ZodType<Record<string, unknown>>> = {
-  app_allowlist: z.object({
-    apps: z.array(z.string()).min(1),
-    hosts: z.array(z.string()).optional(),
-  }),
+  app_allowlist: z
+    .object({ apps: z.array(z.string()).optional(), hosts: z.array(z.string()).optional() })
+    .refine(
+      (p) => (p.apps?.length ?? 0) + (p.hosts?.length ?? 0) > 0,
+      "name at least one app or host",
+    ),
   confirm_before_destroy: z.object({
     targets: z.array(z.string()).min(1),
     dialogWithinMs: z.number().int().positive(),
@@ -71,7 +73,7 @@ const PARAMS: Record<Rule["type"], z.ZodType<Record<string, unknown>>> = {
 
 const SYSTEM = `You compile an operating policy for software agents into machine-checkable rules.
 Available rule types:
-- app_allowlist: which applications or sites the agent may use.
+- app_allowlist: which applications or sites the agent may use. Give both the application names and any hosts the policy names.
 - confirm_before_destroy: destructive actions must show a confirmation dialog first.
 - loop_limit: how many times the agent may repeat the same action on the same screen.
 - data_class_ban: field types the agent must never type into (${DATA_CLASSES.join(", ")}).
@@ -117,7 +119,10 @@ export async function compilePolicy(
 export function toRules(policyId: string, compiled: CompiledPolicy): Rule[] {
   return compiled.rules.map((r, i) => {
     const raw = {
-      app_allowlist: { apps: r.apps, ...(r.hosts?.length ? { hosts: r.hosts } : {}) },
+      app_allowlist: {
+        ...(r.apps?.length ? { apps: r.apps } : {}),
+        ...(r.hosts?.length ? { hosts: r.hosts } : {}),
+      },
       confirm_before_destroy: { targets: r.targets, dialogWithinMs: r.dialogWithinMs ?? 3000 },
       loop_limit: { maxRepeats: r.maxRepeats },
       data_class_ban: { classes: r.classes },

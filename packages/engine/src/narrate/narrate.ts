@@ -32,7 +32,7 @@ export const NarratedStep = z.object({
   app: z
     .string()
     .describe(
-      "The application or site in use, as shown on screen (title, header or address bar host)",
+      "The application in use as shown on screen, plus the address-bar host when one is visible, e.g. 'Acme CRM (crm.acme.test)'",
     ),
   observedAfter: z
     .string()

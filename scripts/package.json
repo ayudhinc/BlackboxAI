@@ -6,13 +6,16 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "probe:spark": "tsx src/probe-spark.ts",
-    "probe:sam": "tsx src/probe-sam.ts"
+    "probe:sam": "tsx src/probe-sam.ts",
+    "verify": "tsx src/verify.ts",
+    "policy": "tsx src/policy.ts"
   },
   "dependencies": {
     "@blackbox/contracts": "workspace:*",
     "@blackbox/db": "workspace:*",
     "@blackbox/engine": "workspace:*",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "drizzle-orm": "0.45.4"
   },
   "devDependencies": {
     "tsx": "4.23.15"

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { hashDistance, SAME_SCREEN_BITS } from "../check/checkers.ts";
-import { frameDiff, screenSignature, selectKeyframes, THUMB_H, THUMB_W } from "./frames.ts";
+import {
+  changedPixels,
+  DIFF_H,
+  DIFF_W,
+  screenSignature,
+  selectKeyframes,
+  THUMB_H,
+  THUMB_W,
+} from "./frames.ts";
 
 function frame(fill: (x: number, y: number) => number): Uint8Array {
   const a = new Uint8Array(THUMB_W * THUMB_H);
@@ -36,15 +44,26 @@ describe("screenSignature", () => {
 });
 
 describe("selectKeyframes", () => {
-  it("keeps the first frame, screen changes, the gap floor and the last frame", () => {
-    const thumbs = [page, pageWithCursor, page, dialog, dialog, page, ...Array(25).fill(page)];
-    const keys = selectKeyframes(thumbs, { threshold: 1.5, maxGap: 20 });
-    expect(keys).toEqual([0, 3, 5, 25, 30]);
-    expect(frameDiff(page, pageWithCursor)).toBeLessThan(1.5);
+  const blank = new Uint8Array(DIFF_W * DIFF_H).fill(240);
+  const withPixels = (n: number, offset = 0) => {
+    const f = blank.slice();
+    for (let i = 0; i < n; i++) f[offset + i] = 20;
+    return f;
+  };
+
+  it("ignores cursor-sized changes, keeps typing, screen changes, the gap floor and the last frame", () => {
+    const cursor = withPixels(8, 5000);
+    const typed = withPixels(25, 100);
+    const dialog = withPixels(4000, 2000);
+    const thumbs = [blank, cursor, blank, typed, typed, dialog, ...Array(25).fill(dialog)];
+    expect(selectKeyframes(thumbs, { levels: 16, minChanged: 20, maxGap: 20 })).toEqual([
+      0, 3, 5, 25, 30,
+    ]);
+    expect(changedPixels(blank, cursor, 16)).toBe(8);
   });
 
   it("handles empty and single-frame input", () => {
     expect(selectKeyframes([])).toEqual([]);
-    expect(selectKeyframes([page])).toEqual([0]);
+    expect(selectKeyframes([blank])).toEqual([0]);
   });
 });

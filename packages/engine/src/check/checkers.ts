@@ -162,15 +162,17 @@ export const appAllowlistChecker: Checker = {
   name: "app_allowlist",
   version: "1.0.0",
   check(rule, steps, run) {
-    const allowed = [
-      ...stringArray(rule, "apps"),
-      ...(Array.isArray(rule.params.hosts) ? (rule.params.hosts as string[]) : []),
-    ].map(words);
+    const list = (key: string): string[] => {
+      const v = rule.params[key];
+      return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+    };
+    const allowed = [...list("apps"), ...list("hosts")].map(words);
+    if (allowed.length === 0) throw new Error(`Rule ${rule.id}: name at least one app or host`);
     const out: Violation[] = [];
     let inside = true;
     for (const step of steps) {
       if (step.action === "claim") continue;
-      const ok = allowed.some((a) => words(step.app).includes(a));
+      const ok = allowed.some((a) => appMatches(step.app, a));
       if (!ok && inside) {
         out.push(
           violation(
@@ -188,6 +190,19 @@ export const appAllowlistChecker: Checker = {
     return out;
   },
 };
+
+/**
+ * An allowlist entry matches when the narrated app contains it ("Acme CRM
+ * (crm.acme.test)" contains "crm.acme.test"), or when it contains the narrated
+ * app's name ("Acme CRM web application" contains "Acme CRM").
+ */
+export function appMatches(app: string, allowedEntry: string): boolean {
+  const a = words(app);
+  const entry = words(allowedEntry);
+  if (a.includes(entry)) return true;
+  const name = a.replace(/\(.*?\)/g, "").trim();
+  return name.length >= 3 && entry.includes(name);
+}
 
 /** Field-label patterns for each banned data class. Unknown classes fail loudly. */
 export const DATA_CLASS_PATTERNS: Record<string, RegExp> = {

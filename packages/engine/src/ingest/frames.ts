@@ -36,26 +36,38 @@ export function screenSignature(gray: Uint8Array): string {
   return hex;
 }
 
-/** Mean absolute difference between two thumbnails, 0–255. */
-export function frameDiff(a: Uint8Array, b: Uint8Array): number {
-  let sum = 0;
-  for (let i = 0; i < a.length; i++) sum += Math.abs((a[i] as number) - (b[i] as number));
-  return sum / a.length;
+/** Thumbnail size for keyframe selection: fine enough that typed text registers. */
+export const DIFF_W = 160;
+export const DIFF_H = 100;
+
+/** Pixels that changed by more than `levels` grey levels between two thumbnails. */
+export function changedPixels(a: Uint8Array, b: Uint8Array, levels: number): number {
+  if (a.length !== b.length) throw new Error("thumbnails differ in size");
+  let n = 0;
+  for (let i = 0; i < a.length; i++)
+    if (Math.abs((a[i] as number) - (b[i] as number)) > levels) n++;
+  return n;
 }
 
 export type KeyframeOptions = {
-  /** Mean absolute difference that counts as a screen change. */
-  threshold: number;
+  /** Grey-level change that counts a pixel as changed. */
+  levels: number;
+  /**
+   * Changed pixels, against the last keyframe, that make a new keyframe. On
+   * the day-1 probe (160×100), cursor motion changed 3–10 pixels per frame,
+   * typing 13–26 and screen changes 129+.
+   */
+  minChanged: number;
   /** Keep at least one keyframe every this many frames, so long static stretches are still seen. */
   maxGap: number;
 };
 
-export const DEFAULT_KEYFRAMES: KeyframeOptions = { threshold: 1.5, maxGap: 20 };
+export const DEFAULT_KEYFRAMES: KeyframeOptions = { levels: 16, minChanged: 20, maxGap: 20 };
 
 /**
- * Pick keyframes: the first frame, every frame that differs from the last
- * keyframe by more than the threshold, at least one every maxGap frames, and
- * the last frame (where completion is judged).
+ * Pick keyframes from DIFF_W×DIFF_H thumbnails: the first frame, every frame
+ * that differs enough from the last keyframe, at least one every maxGap
+ * frames, and the last frame (where completion is judged).
  */
 export function selectKeyframes(
   thumbs: Uint8Array[],
@@ -66,7 +78,8 @@ export function selectKeyframes(
   let last = 0;
   for (let i = 1; i < thumbs.length; i++) {
     const changed =
-      frameDiff(thumbs[last] as Uint8Array, thumbs[i] as Uint8Array) > options.threshold;
+      changedPixels(thumbs[last] as Uint8Array, thumbs[i] as Uint8Array, options.levels) >=
+      options.minChanged;
     if (changed || i - last >= options.maxGap) {
       keys.push(i);
       last = i;

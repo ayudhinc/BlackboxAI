@@ -132,6 +132,22 @@ describe("app_allowlist", () => {
     expect(appAllowlistChecker.check(r, s, run)).toMatchObject([{ stepN: 2 }]);
   });
 
+  it("matches a longer allowlist name against the narrated app name", () => {
+    const named = rule("app_allowlist", { apps: ["Acme CRM web application"] });
+    expect(appAllowlistChecker.check(named, steps({ app: "Acme CRM" }), run)).toEqual([]);
+    expect(appAllowlistChecker.check(named, steps({ app: "Webmail" }), run)).toHaveLength(1);
+  });
+
+  it("accepts a host-only allowlist", () => {
+    const hostsOnly = rule("app_allowlist", { hosts: ["crm.acme.test"] });
+    expect(
+      appAllowlistChecker.check(hostsOnly, steps({ app: "Acme CRM (crm.acme.test)" }), run),
+    ).toEqual([]);
+    expect(
+      appAllowlistChecker.check(hostsOnly, steps({ app: "Webmail (webmail.test)" }), run),
+    ).toHaveLength(1);
+  });
+
   it("accepts the allowed host", () => {
     expect(appAllowlistChecker.check(r, steps({ app: "Chromium — crm.acme.test" }), run)).toEqual(
       [],

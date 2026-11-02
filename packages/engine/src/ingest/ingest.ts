@@ -7,7 +7,15 @@ import { execFile } from "node:child_process";
 import { mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { DEFAULT_KEYFRAMES, screenSignature, selectKeyframes, THUMB_H, THUMB_W } from "./frames.ts";
+import {
+  DEFAULT_KEYFRAMES,
+  DIFF_H,
+  DIFF_W,
+  screenSignature,
+  selectKeyframes,
+  THUMB_H,
+  THUMB_W,
+} from "./frames.ts";
 import { probeVideo, type VideoInfo } from "./probe.ts";
 
 const run = promisify(execFile);
@@ -51,26 +59,12 @@ export async function ingest(recordingPath: string, workDir: string): Promise<In
   const frameCount = (await readdir(framesDir)).filter((f) => f.endsWith(".jpg")).length;
   if (frameCount === 0) throw new Error("The recording produced no frames.");
 
-  const { stdout } = await run(
-    "ffmpeg",
-    [
-      "-loglevel",
-      "error",
-      "-i",
-      recordingPath,
-      "-vf",
-      `fps=${SAMPLE_FPS},scale=${THUMB_W}:${THUMB_H}:flags=area,format=gray`,
-      "-f",
-      "rawvideo",
-      "-",
-    ],
-    { encoding: "buffer", maxBuffer: 1024 * 1024 * 512 },
-  );
-  const size = THUMB_W * THUMB_H;
-  const thumbs: Uint8Array[] = [];
-  for (let i = 0; i + size <= stdout.length; i += size) thumbs.push(stdout.subarray(i, i + size));
-  if (thumbs.length !== frameCount) {
-    throw new Error(`Frame count mismatch: ${frameCount} JPEGs but ${thumbs.length} thumbnails.`);
+  const thumbs = await grayThumbs(recordingPath, THUMB_W, THUMB_H);
+  const diffThumbs = await grayThumbs(recordingPath, DIFF_W, DIFF_H);
+  if (thumbs.length !== frameCount || diffThumbs.length !== frameCount) {
+    throw new Error(
+      `Frame count mismatch: ${frameCount} JPEGs, ${thumbs.length} and ${diffThumbs.length} thumbnails.`,
+    );
   }
 
   const framesPerChunk = (CHUNK_MS / 1000) * SAMPLE_FPS;
@@ -112,9 +106,32 @@ export async function ingest(recordingPath: string, workDir: string): Promise<In
     frameCount,
     framePath: (frame) => join(framesDir, `${String(frame + 1).padStart(6, "0")}.jpg`),
     signatures: thumbs.map(screenSignature),
-    keyframes: selectKeyframes(thumbs, DEFAULT_KEYFRAMES),
+    keyframes: selectKeyframes(diffThumbs, DEFAULT_KEYFRAMES),
     chunks,
   };
+}
+
+/** Decode the recording at SAMPLE_FPS into grayscale thumbnails of one size. */
+async function grayThumbs(path: string, w: number, h: number): Promise<Uint8Array[]> {
+  const { stdout } = await run(
+    "ffmpeg",
+    [
+      "-loglevel",
+      "error",
+      "-i",
+      path,
+      "-vf",
+      `fps=${SAMPLE_FPS},scale=${w}:${h}:flags=area,format=gray`,
+      "-f",
+      "rawvideo",
+      "-",
+    ],
+    { encoding: "buffer", maxBuffer: 1024 * 1024 * 1024 },
+  );
+  const size = w * h;
+  const out: Uint8Array[] = [];
+  for (let i = 0; i + size <= stdout.length; i += size) out.push(stdout.subarray(i, i + size));
+  return out;
 }
 
 async function ffmpeg(args: string[]): Promise<void> {
