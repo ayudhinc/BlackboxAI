@@ -65,6 +65,8 @@ Rules:
 - target names the control by role and visible label. field is the visible label of the field typed into, never its contents.
 - Never write typed values. If a value is visible, refer to it as [redacted].
 - dialogOpened is true only when a dialog or confirmation box appears because of that action.
+- Actions that leave the screen unchanged still happened. If an agent console or action log is visible (often a strip or side panel showing the agent's status), treat each new entry in it, such as "attempt 3" or "click Save", as evidence of an action, and report repeated attempts as separate steps.
+- A step known only from the agent's own log, not from a visible change in the application, gets confidence below 0.8.
 - confidence below 0.8 means a reviewer should check the step.`;
 
 export type NarrationInput = {
