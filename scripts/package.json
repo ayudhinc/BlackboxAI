@@ -11,14 +11,17 @@
     "policy": "tsx src/policy.ts",
     "seed-demo": "tsx src/seed-demo.ts",
     "eval-narration": "tsx src/eval-narration.ts",
-    "agent-run": "tsx src/agent-run.ts"
+    "agent-run": "tsx src/agent-run.ts",
+    "create-operator": "tsx src/create-operator.ts",
+    "seed-dev-operator": "tsx src/seed-dev-operator.ts"
   },
   "dependencies": {
     "@blackbox/contracts": "workspace:*",
     "@blackbox/db": "workspace:*",
     "@blackbox/engine": "workspace:*",
     "zod": "4.6.7",
-    "drizzle-orm": "0.45.4"
+    "drizzle-orm": "0.45.4",
+    "@blackbox/auth": "workspace:*"
   },
   "devDependencies": {
     "tsx": "4.23.15"

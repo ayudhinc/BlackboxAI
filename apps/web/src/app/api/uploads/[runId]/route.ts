@@ -1,9 +1,12 @@
 import { keys, LocalBlobStore } from "@blackbox/engine";
 import { NextResponse } from "next/server";
+import { operatorOr401 } from "@/lib/auth";
 import { store } from "@/lib/server";
 
 /** Local development only: production uploads go straight to R2 with a presigned URL. */
 export async function PUT(req: Request, ctx: { params: Promise<{ runId: string }> }) {
+  const op = await operatorOr401();
+  if (op instanceof NextResponse) return op;
   const s = store();
   if (!(s instanceof LocalBlobStore))
     return NextResponse.json({ error: "Upload to storage directly." }, { status: 404 });

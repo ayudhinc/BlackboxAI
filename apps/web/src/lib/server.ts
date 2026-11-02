@@ -14,6 +14,3 @@ export function store(): BlobStore {
   g.__bbStore ??= storeFromEnv();
   return g.__bbStore;
 }
-
-/** Who is acting. Single-operator v0: auth is the next step, so the name is explicit and honest. */
-export const OPERATOR = "operator";

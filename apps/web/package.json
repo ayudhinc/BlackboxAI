@@ -12,13 +12,15 @@
   "dependencies": {
     "@blackbox/contracts": "workspace:*",
     "@blackbox/db": "workspace:*",
+    "@blackbox/engine": "workspace:*",
+    "better-auth": "1.7.12",
+    "drizzle-orm": "0.45.4",
     "next": "16.4.3",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "@blackbox/engine": "workspace:*",
-    "drizzle-orm": "0.45.4",
+    "server-only": "0.0.1",
     "zod": "4.6.7",
-    "server-only": "0.0.1"
+    "@blackbox/auth": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

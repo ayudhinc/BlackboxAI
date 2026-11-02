@@ -3,6 +3,7 @@ import { schema } from "@blackbox/db";
 import { keys, R2BlobStore } from "@blackbox/engine";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { operatorOr401 } from "@/lib/auth";
 import { db, store } from "@/lib/server";
 
 const MAX_BYTES = 500 * 1024 * 1024;
@@ -31,6 +32,8 @@ const Body = z.object({
 
 /** Create a run and hand back where the browser should upload the recording. */
 export async function POST(req: Request) {
+  const op = await operatorOr401();
+  if (op instanceof NextResponse) return op;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(

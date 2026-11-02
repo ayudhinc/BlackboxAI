@@ -29,6 +29,13 @@
       "when": 1793583246544,
       "tag": "0003_step_screen_after",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793584307334,
+      "tag": "0004_auth",
+      "breakpoints": true
     }
   ]
 }

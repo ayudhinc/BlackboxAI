@@ -1,0 +1,6 @@
+{
+  "email": "dev-operator@blackbox.test",
+  "name": "Dev Operator",
+  "password": "dev-m0dgT64vuliogfDyy7aSSjvJ",
+  "note": "Local development only. seed-dev-operator refuses any database but the local compose Postgres."
+}

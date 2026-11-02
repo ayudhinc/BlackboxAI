@@ -6,7 +6,8 @@ import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { db, OPERATOR, store } from "./server";
+import { requireOperator } from "./auth";
+import { db, store } from "./server";
 
 export type ActionState = { error: string | null };
 
@@ -19,6 +20,7 @@ const Review = z.object({
 
 /** A reviewer approves the proposed verdict or overrules it. Either way the decision is a new verdict row. */
 export async function reviewVerdict(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const operator = await requireOperator();
   const parsed = Review.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "The review form was incomplete." };
   const { runId, decision, status, reason } = parsed.data;
@@ -45,7 +47,7 @@ export async function reviewVerdict(_prev: ActionState, form: FormData): Promise
       rationale: latest.rationale,
       evidenceFrames: latest.evidenceFrames,
       decidedBy: "reviewer",
-      reviewer: OPERATOR,
+      reviewer: operator.name,
       reviewReason: reason || (decision === "approve" ? "Approved the proposed verdict." : null),
     });
   revalidatePath(`/runs/${runId}`);
@@ -56,6 +58,7 @@ export async function reviewVerdict(_prev: ActionState, form: FormData): Promise
 const MAX_POLICY_BYTES = 10 * 1024 * 1024;
 
 export async function uploadPolicy(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireOperator();
   const file = form.get("file");
   if (!(file instanceof File) || file.size === 0)
     return { error: "Choose a policy document to upload." };
@@ -90,6 +93,7 @@ const Resolve = z.object({
 });
 
 export async function resolvePolicyRule(_prev: ActionState, form: FormData): Promise<ActionState> {
+  await requireOperator();
   const parsed = Resolve.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "The form was incomplete." };
   const { policyId, ruleId, readBack } = parsed.data;
@@ -122,6 +126,7 @@ export async function resolvePolicyRule(_prev: ActionState, form: FormData): Pro
 }
 
 export async function signOffPolicy(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const operator = await requireOperator();
   const policyId = String(form.get("policyId") ?? "");
   const rules = await loadRules(db(), policyId);
   if (rules.length === 0) return { error: "This policy has no rules to sign off." };
@@ -131,7 +136,7 @@ export async function signOffPolicy(_prev: ActionState, form: FormData): Promise
   const now = new Date();
   await db()
     .update(schema.rules)
-    .set({ signedOffBy: OPERATOR, signedOffAt: now })
+    .set({ signedOffBy: operator.name, signedOffAt: now })
     .where(eq(schema.rules.policyId, policyId));
   await db()
     .update(schema.policies)
