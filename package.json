@@ -20,7 +20,8 @@
     "dev:worker": "pnpm --filter @blackbox/worker dev",
     "verify": "pnpm --filter @blackbox/scripts verify",
     "policy": "pnpm --filter @blackbox/scripts policy",
-    "seed-demo": "pnpm --filter @blackbox/scripts seed-demo"
+    "seed-demo": "pnpm --filter @blackbox/scripts seed-demo",
+    "eval-narration": "pnpm --filter @blackbox/scripts eval-narration"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.2",

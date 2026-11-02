@@ -9,6 +9,8 @@ export {
   REVIEW_BELOW_CONFIDENCE,
   runChecks,
 } from "./check/checkers.ts";
+export type { NarrationScore, TruthStep } from "./eval/narration.ts";
+export { scoreNarration, TIME_TOLERANCE_MS } from "./eval/narration.ts";
 export type { EvidencePack } from "./evidence/pack.ts";
 export {
   COVERAGE_NOTES,
