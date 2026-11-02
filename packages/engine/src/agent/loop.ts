@@ -84,7 +84,10 @@ export async function runAgent(
       schemaName: "act",
       schema: AgentAction,
       via: "tool",
-      normalize: numericStrings(["x", "y", "scrollDy"]),
+      normalize: (raw) =>
+        fillMissing(["x", "y", "text", "keys", "scrollDy", "claim"])(
+          numericStrings(["x", "y", "scrollDy"])(raw),
+        ),
       messages: [
         { role: "system", content: SYSTEM },
         {
@@ -156,6 +159,16 @@ export function numericStrings(keys: string[]): (raw: unknown) => unknown {
       if (/^-?\d+$/.test(t)) out[k] = Number(t);
       else if (t === "" || t.toLowerCase() === "null") out[k] = null;
     }
+    return out;
+  };
+}
+
+/** Spark has omitted nullable keys from tool arguments; a missing nullable key means null. */
+export function fillMissing(keys: string[]): (raw: unknown) => unknown {
+  return (raw) => {
+    if (raw === null || typeof raw !== "object") return raw;
+    const out: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+    for (const k of keys) if (!(k in out)) out[k] = null;
     return out;
   };
 }

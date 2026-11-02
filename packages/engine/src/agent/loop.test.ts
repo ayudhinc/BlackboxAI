@@ -72,6 +72,19 @@ group("runAgent", () => {
     expect(desktop.calls[0]).toBe("click 640,400");
   });
 
+  it("treats omitted nullable keys as null", async () => {
+    const transport = new FakeTransport([
+      chatReply(JSON.stringify({ thought: "t", action: "done", claim: "ok" })),
+    ]);
+    const result = await runAgent(
+      new MetaClient(transport, new MemoryLineageSink()),
+      new FakeDesktop(),
+      "t",
+      { model: "muse-spark-1.3" },
+    );
+    expect(result.claim).toBe("ok");
+  });
+
   it("ignores clicks outside the screen and stops at the step budget", async () => {
     const transport = new FakeTransport([
       act({ action: "click", x: 1200, y: 10 }),
