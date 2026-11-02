@@ -4,6 +4,7 @@ import {
   changedPixels,
   DIFF_H,
   DIFF_W,
+  screenIdentities,
   screenSignature,
   selectKeyframes,
   THUMB_H,
@@ -65,5 +66,28 @@ describe("selectKeyframes", () => {
   it("handles empty and single-frame input", () => {
     expect(selectKeyframes([])).toEqual([]);
     expect(selectKeyframes([blank])).toEqual([0]);
+  });
+});
+
+describe("screenIdentities", () => {
+  const blank = new Uint8Array(DIFF_W * DIFF_H).fill(240);
+  const variant = (offset: number, n: number) => {
+    const f = blank.slice();
+    for (let i = 0; i < n; i++) f[offset + i] = 20;
+    return f;
+  };
+
+  it("gives the same id to the same screen, a new id to a different one, and remembers screens", () => {
+    const cursorMoved = variant(9000, 6);
+    const dealA = variant(1000, 60);
+    const dealB = variant(3000, 60);
+    expect(screenIdentities([blank, cursorMoved, dealA, dealB, blank, dealA])).toEqual([
+      "s0",
+      "s0",
+      "s1",
+      "s2",
+      "s0",
+      "s1",
+    ]);
   });
 });

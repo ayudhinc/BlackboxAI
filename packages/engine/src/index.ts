@@ -1,3 +1,5 @@
+export type { AgentResult, Desktop } from "./agent/loop.ts";
+export { AgentAction, describe as describeAction, runAgent } from "./agent/loop.ts";
 export {
   appAllowlistChecker,
   checkerFor,

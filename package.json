@@ -21,7 +21,8 @@
     "verify": "pnpm --filter @blackbox/scripts verify",
     "policy": "pnpm --filter @blackbox/scripts policy",
     "seed-demo": "pnpm --filter @blackbox/scripts seed-demo",
-    "eval-narration": "pnpm --filter @blackbox/scripts eval-narration"
+    "eval-narration": "pnpm --filter @blackbox/scripts eval-narration",
+    "agent-run": "pnpm --filter @blackbox/scripts agent-run"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.2",

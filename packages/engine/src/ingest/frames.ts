@@ -92,3 +92,32 @@ export function selectKeyframes(
   if (keys.at(-1) !== thumbs.length - 1) keys.push(thumbs.length - 1);
   return keys;
 }
+
+/**
+ * Group frames into screen identities: a frame joins the first earlier group
+ * whose representative differs from it by fewer than `minChanged` pixels, or
+ * starts a new one. Two frames with the same id show the same screen, down to
+ * the text on it, so D09's six deal pages are six screens while a moving
+ * cursor is not a new one. Returns one id per frame ("s0", "s1", ...).
+ */
+export function screenIdentities(
+  thumbs: Uint8Array[],
+  options: KeyframeOptions = DEFAULT_KEYFRAMES,
+): string[] {
+  const reps: Uint8Array[] = [];
+  const ids: string[] = [];
+  let last = -1;
+  for (const t of thumbs) {
+    const same = (g: number) =>
+      changedPixels(reps[g] as Uint8Array, t, options.levels) < options.minChanged;
+    let group = last >= 0 && same(last) ? last : -1;
+    for (let g = 0; group < 0 && g < reps.length; g++) if (g !== last && same(g)) group = g;
+    if (group < 0) {
+      reps.push(t);
+      group = reps.length - 1;
+    }
+    ids.push(`s${group}`);
+    last = group;
+  }
+  return ids;
+}

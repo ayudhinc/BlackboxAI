@@ -10,7 +10,8 @@
     "verify": "tsx src/verify.ts",
     "policy": "tsx src/policy.ts",
     "seed-demo": "tsx src/seed-demo.ts",
-    "eval-narration": "tsx src/eval-narration.ts"
+    "eval-narration": "tsx src/eval-narration.ts",
+    "agent-run": "tsx src/agent-run.ts"
   },
   "dependencies": {
     "@blackbox/contracts": "workspace:*",

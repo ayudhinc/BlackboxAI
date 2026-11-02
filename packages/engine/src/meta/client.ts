@@ -25,6 +25,14 @@ export type StructuredRequest<S extends z.ZodType> = {
   maxCompletionTokens?: number;
   /** Total attempts, including the first. Only retryable failures are retried. */
   maxAttempts?: number;
+  /**
+   * "tool" asks for one function call whose arguments are the output. Use it
+   * where the model narrates before answering (computer-use turns): the prose
+   * stays out of the parsed value.
+   */
+  via?: "response_format" | "tool";
+  /** Applied to the decoded JSON before validation, for known, narrow wire quirks. */
+  normalize?: (raw: unknown) => unknown;
 };
 
 export type SamVideoRequest = {
@@ -52,14 +60,34 @@ export class MetaClient {
   async structured<S extends z.ZodType>(req: StructuredRequest<S>): Promise<z.infer<S>> {
     const model = req.model ?? MODELS.spark;
     assertAllowedModel(model);
-    const { $schema: _, ...jsonSchema } = z.toJSONSchema(req.schema) as Record<string, unknown>;
+    const { $schema: _, ...jsonSchema } = strictSchema(z.toJSONSchema(req.schema)) as Record<
+      string,
+      unknown
+    >;
     const request: ChatRequest = {
       model,
       messages: req.messages,
-      response_format: {
-        type: "json_schema",
-        json_schema: { name: req.schemaName, schema: jsonSchema },
-      },
+      ...(req.via === "tool"
+        ? {
+            tools: [
+              {
+                type: "function" as const,
+                function: {
+                  name: req.schemaName,
+                  description: "Return your answer",
+                  parameters: jsonSchema,
+                  strict: true,
+                },
+              },
+            ],
+            // The Model API supports only tool_choice "auto"; a missing call fails validation and is retried.
+          }
+        : {
+            response_format: {
+              type: "json_schema" as const,
+              json_schema: { name: req.schemaName, schema: jsonSchema, strict: true },
+            },
+          }),
       ...(req.reasoningEffort ? { reasoning_effort: req.reasoningEffort } : {}),
       ...(req.maxCompletionTokens ? { max_completion_tokens: req.maxCompletionTokens } : {}),
     };
@@ -75,7 +103,11 @@ export class MetaClient {
         if (res.finishReason === "length") {
           throw new MetaCallError("incomplete", "The model ran out of output tokens.");
         }
-        const value = parseStructured(req.schema, res.content);
+        const value = parseStructured(
+          req.schema,
+          req.via === "tool" ? res.toolArguments : res.content,
+          req.normalize,
+        );
         await this.record(req.subject, model, hash, attempt, started, usage, null);
         return value;
       } catch (error) {
@@ -197,18 +229,39 @@ export class MetaClient {
   }
 }
 
+/**
+ * The Model API's strict subset: every object closes with additionalProperties
+ * false and lists every property as required (our schemas use nullable, never
+ * optional, so nothing is lost).
+ */
+export function strictSchema(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(strictSchema);
+  if (node === null || typeof node !== "object") return node;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(node as Record<string, unknown>)) out[k] = strictSchema(v);
+  if (out.type === "object" && out.properties && typeof out.properties === "object") {
+    out.additionalProperties = false;
+    out.required = Object.keys(out.properties as Record<string, unknown>);
+  }
+  return out;
+}
+
 export function parseStructured<S extends z.ZodType>(
   schema: S,
   content: string | null,
+  normalize: (raw: unknown) => unknown = (raw) => raw,
 ): z.infer<S> {
   if (!content) throw new MetaCallError("schema_invalid", "The model returned no content.");
   let json: unknown;
   try {
     json = JSON.parse(content);
   } catch {
-    throw new MetaCallError("schema_invalid", "The model returned content that is not JSON.");
+    throw new MetaCallError(
+      "schema_invalid",
+      `The model returned content that is not JSON: ${JSON.stringify(content.slice(0, 200))}`,
+    );
   }
-  const parsed = schema.safeParse(json);
+  const parsed = schema.safeParse(normalize(json));
   if (!parsed.success) {
     throw new MetaCallError(
       "schema_invalid",

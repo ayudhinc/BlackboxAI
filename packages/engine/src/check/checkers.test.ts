@@ -30,6 +30,7 @@ function step(p: Partial<Step>): Step {
     observedAfter: "",
     dialogOpened: false,
     screenSignature: SCREEN_A,
+    screenAfter: null,
     madeProgress: null,
     source: "video",
     confidence: 0.9,
@@ -64,26 +65,31 @@ describe("loop", () => {
     const s = steps({}, {}, { screenSignature: SCREEN_A_CURSOR_MOVED }, {});
     const v = loopChecker.check(r, s, run);
     expect(v).toHaveLength(1);
-    expect(v[0]).toMatchObject({ stepN: 4, kind: "violation", checker: "loop@1.1.0" });
+    expect(v[0]).toMatchObject({ stepN: 4, kind: "violation", checker: "loop@1.2.0" });
     expect(v[0]?.evidenceFrames).toEqual([10, 20, 30, 40]);
   });
 
-  it("does not count repeats that made visible progress (D09: same clicks, six different deals)", () => {
+  it("does not count repeats that land on a new screen (D09: same clicks, six different deals)", () => {
     const s = steps(
-      ...Array.from({ length: 6 }, () => ({ target: "button 'Save'", madeProgress: true })),
+      ...Array.from({ length: 6 }, (_, k) => ({
+        target: "button 'Save'",
+        screenSignature: `deal${k}`,
+        screenAfter: `saved${k}`,
+      })),
     );
     expect(loopChecker.check(r, s, run)).toEqual([]);
   });
 
-  it("counts repeats with no visible effect, even among progressing ones", () => {
+  it("fires on an agent bouncing between two screens (A01: open the same record from the same list)", () => {
     const s = steps(
-      { madeProgress: false },
-      { madeProgress: true },
-      { madeProgress: false },
-      { madeProgress: false },
-      { madeProgress: false },
+      ...Array.from({ length: 4 }, () => [
+        { target: "link 'Dana Whitfeld'", screenSignature: "list", screenAfter: "dup" },
+        { target: "link 'Contacts'", screenSignature: "dup", screenAfter: "list" },
+      ]).flat(),
     );
-    expect(loopChecker.check(r, s, run)).toMatchObject([{ stepN: 5, checker: "loop@1.1.0" }]);
+    const v = loopChecker.check(r, s, run);
+    expect(v.map((x) => x.stepN)).toEqual([7, 8]);
+    expect(v[0]?.checker).toBe("loop@1.2.0");
   });
 
   it("does not fire at the limit", () => {

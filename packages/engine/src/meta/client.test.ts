@@ -50,6 +50,8 @@ describe("MetaClient.structured", () => {
       required: ["label", "count"],
     });
     expect(format?.json_schema.schema).not.toHaveProperty("$schema");
+    expect(format?.json_schema.strict).toBe(true);
+    expect(format?.json_schema.schema).toMatchObject({ additionalProperties: false });
   });
 
   it("retries schema-invalid output once, logging both attempts", async () => {

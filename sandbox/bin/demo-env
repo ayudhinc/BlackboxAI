@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Bring up the CRM, the browser and the agent console strip, then wait. Used by
+# the agent runner on the host, which drives this container over `docker exec`.
+# Usage: demo-env [start-url]
+set -euo pipefail
+url="${1:-http://crm.acme.test/contacts}"
+PORT=80 node /opt/blackbox/apps/crm/server.ts >/tmp/crm.log 2>&1 &
+for _ in $(seq 1 50); do curl -sf http://crm.acme.test/__console/state >/dev/null && break; sleep 0.1; done
+chromium --no-sandbox --disable-infobars --no-first-run --no-default-browser-check \
+  --disable-features=Translate,HttpsUpgrades,HttpsFirstBalancedModeAutoEnable,PasswordManagerOnboarding \
+  --force-renderer-accessibility --window-position=0,0 --window-size="${SCREEN_W},$((SCREEN_H - 40))" \
+  --user-data-dir=/tmp/chrome-main "$url" </dev/null >/tmp/chromium.log 2>&1 &
+chromium --no-sandbox --disable-infobars --no-first-run --no-default-browser-check \
+  --window-position=0,$((SCREEN_H - 40)) --window-size="${SCREEN_W},40" \
+  --user-data-dir=/tmp/chrome-console --app="http://crm.acme.test/__console" </dev/null >/tmp/console.log 2>&1 &
+sleep 4
+echo READY
+exec sleep infinity

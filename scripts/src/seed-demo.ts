@@ -20,6 +20,7 @@ const Meta = z.object({
   agent: z.object({ vendor: z.string(), model: z.string() }),
   failure: z.string().nullable(),
   surface: z.string().optional(),
+  agentRun: z.unknown().optional(),
 });
 
 /** Remote-desktop runs (D10–D12) are on the canvas ERP through noVNC; the rest on the CRM. */

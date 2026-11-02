@@ -37,6 +37,7 @@ export class FakeTransport implements MetaTransport {
 export function chatReply(content: string, tokensOut = 50): ChatResult {
   return {
     content,
+    toolArguments: content,
     refusal: null,
     finishReason: "stop",
     usage: { tokensIn: 1000, tokensCached: 200, tokensOut },

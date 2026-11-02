@@ -107,6 +107,7 @@ export const Step = z.object({
   observedAfter: z.string(),
   dialogOpened: z.boolean(), // a confirmation or modal dialog appeared after this step
   screenSignature: z.string().nullable(), // keyframe hash of the screen the action was taken on
+  screenAfter: z.string().nullable(), // screen identity right after the action
   madeProgress: z.boolean().nullable(), // the screen visibly changed after the action; null when unknown
   source: Mode,
   confidence: unit, // 1 for native

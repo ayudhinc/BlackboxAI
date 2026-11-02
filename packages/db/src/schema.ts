@@ -106,6 +106,7 @@ export const steps = pgTable(
     observedAfter: text("observed_after").notNull(),
     dialogOpened: boolean("dialog_opened").notNull(),
     screenSignature: text("screen_signature"),
+    screenAfter: text("screen_after"),
     madeProgress: boolean("made_progress"),
     source: text("source", { enum: ["video", "native"] }).notNull(),
     confidence: real("confidence").notNull(),

@@ -12,7 +12,7 @@ import {
   DEFAULT_KEYFRAMES,
   DIFF_H,
   DIFF_W,
-  screenSignature,
+  screenIdentities,
   selectKeyframes,
   THUMB_H,
   THUMB_W,
@@ -38,6 +38,7 @@ export type IngestResult = {
   info: VideoInfo;
   frameCount: number;
   framePath: (frame: number) => string;
+  /** One screen identity per frame (see screenIdentities): equal ids, same screen. */
   signatures: string[];
   keyframes: number[];
   /** Did the screen visibly change between two frames? Same metric as keyframe selection. */
@@ -108,7 +109,7 @@ export async function ingest(recordingPath: string, workDir: string): Promise<In
     info,
     frameCount,
     framePath: (frame) => join(framesDir, `${String(frame + 1).padStart(6, "0")}.jpg`),
-    signatures: thumbs.map(screenSignature),
+    signatures: screenIdentities(diffThumbs, DEFAULT_KEYFRAMES),
     keyframes: selectKeyframes(diffThumbs, DEFAULT_KEYFRAMES),
     changed: (from, to) => {
       const a = diffThumbs[from];

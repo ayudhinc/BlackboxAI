@@ -20,12 +20,23 @@ export type ChatRequest = {
     type: "json_schema";
     json_schema: { name: string; schema: Record<string, unknown>; strict?: boolean };
   };
+  tools?: Array<{
+    type: "function";
+    function: {
+      name: string;
+      description: string;
+      parameters: Record<string, unknown>;
+      strict?: boolean;
+    };
+  }>;
   reasoning_effort?: "low" | "medium" | "high" | "max";
   max_completion_tokens?: number;
 };
 
 export type ChatResult = {
   content: string | null;
+  /** Arguments of the first tool call, when the request offered tools. */
+  toolArguments: string | null;
   refusal: string | null;
   finishReason: string | null;
   usage: TokenUsage;
@@ -75,6 +86,10 @@ export function createMetaTransport(env: NodeJS.ProcessEnv = process.env): MetaT
       const usage = res.usage;
       return {
         content: choice?.message.content ?? null,
+        toolArguments:
+          choice?.message.tool_calls?.[0]?.type === "function"
+            ? choice.message.tool_calls[0].function.arguments
+            : null,
         refusal: choice?.message.refusal ?? null,
         finishReason: choice?.finish_reason ?? null,
         usage: {
