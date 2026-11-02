@@ -181,6 +181,9 @@ export const verdicts = pgTable(
     status: text("status", {
       enum: ["completed", "completed_with_violations", "not_completed", "needs_review"],
     }).notNull(),
+    proposedStatus: text("proposed_status", {
+      enum: ["completed", "completed_with_violations", "not_completed", "needs_review"],
+    }).notNull(),
     confidence: real("confidence").notNull(),
     rationale: text("rationale").notNull(),
     evidenceFrames: jsonb("evidence_frames").$type<number[]>().notNull(),

@@ -13,6 +13,7 @@
     "@blackbox/contracts": "workspace:*",
     "@blackbox/db": "workspace:*",
     "@meta-sam/parser": "0.1.0",
+    "drizzle-orm": "0.45.4",
     "openai": "7.43.0",
     "zod": "4.6.7"
   }

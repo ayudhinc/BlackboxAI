@@ -106,6 +106,9 @@ importers:
       "@meta-sam/parser":
         specifier: 0.1.0
         version: 0.1.0
+      drizzle-orm:
+        specifier: 0.45.4
+        version: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
       openai:
         specifier: 7.43.0
         version: 7.43.0(zod@4.6.7)

@@ -172,6 +172,7 @@ export type VerdictStatus = z.infer<typeof VerdictStatus>;
 export const Verdict = z.object({
   runId: id,
   status: VerdictStatus,
+  proposedStatus: VerdictStatus, // what the judgement says before routing; status is needs_review when routed
   confidence: unit,
   rationale: z.string().min(1),
   evidenceFrames: z.array(z.number().int().min(0)),

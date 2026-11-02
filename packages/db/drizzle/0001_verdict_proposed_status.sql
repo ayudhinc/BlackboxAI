@@ -1,0 +1,1 @@
+ALTER TABLE "verdicts" ADD COLUMN "proposed_status" text NOT NULL;

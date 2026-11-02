@@ -13,3 +13,4 @@ frames/
 evidence/
 next-env.d.ts
 *.tsbuildinfo
+.data/

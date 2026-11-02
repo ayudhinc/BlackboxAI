@@ -7,9 +7,14 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 import { connect } from "@blackbox/db";
-import { createMetaTransport, DbLineageSink, MetaClient, tracksFromSam } from "@blackbox/engine";
+import {
+  createMetaTransport,
+  DbLineageSink,
+  MetaClient,
+  probeVideo,
+  tracksFromSam,
+} from "@blackbox/engine";
 import { loadEnv, ROOT } from "./env.ts";
-import { probeVideo } from "./media.ts";
 
 loadEnv();
 const [path, ...phraseArgs] = process.argv.slice(2);
