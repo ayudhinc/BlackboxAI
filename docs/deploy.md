@@ -9,8 +9,8 @@ Go-ahead given 2026-11-01. Steps marked **you** need Dushyant's accounts or hand
 | GitHub | `ayudhinc/BlackboxAI`, private, `main` pushed |
 | Neon | Project `blackboxai` (`winter-voice-41686139`), org Ayudh, aws-us-east-1, all migrations applied |
 | Vercel | Project `blackboxai` (team ayudh-incs-projects), root `apps/web`, connected to the repo; production build READY at `https://blackboxai-ayudh-incs-projects.vercel.app`. Env set: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `DAILY_BUDGET_USD`. **Blocked:** Vercel Deployment Protection (Vercel Authentication) is on, so the URL redirects to Vercel SSO; turning it off is Dushyant's call (Settings › Deployment Protection). The app has its own sign-in. |
-| R2 | Not started: needs Cloudflare access (wrangler is not installed or signed in) |
-| Fly | Not started: `fly auth login` needed |
+| R2 | Bucket `blackboxai` (private, Western North America) created, with CORS allowing PUT and GET from the production origin. Account API token "BlackboxAI R2 Account Token" created (Object Read & Write, this bucket only). **Waiting:** Dushyant copies its access key ID and secret into `.env` as `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`, with `R2_ACCOUNT_ID` and `R2_BUCKET=blackboxai` |
+| Fly | Signed in. **Blocked on billing:** org `ayudh` has overdue invoices; org `personal` has no payment method. App creation refused in both |
 | Operator account | Not created: Dushyant's password |
 
 ## What runs where
