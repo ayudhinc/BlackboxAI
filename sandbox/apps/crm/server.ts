@@ -255,9 +255,6 @@ const server = createServer(async (req, res) => {
     const path = url.pathname;
     const flash = url.searchParams.get("ok") ? flashOk(url.searchParams.get("ok") as string) : "";
 
-    if (host === "webmail.test") return send(res, 200, webmail(path));
-    if (host === "erp.meridian.test") return erpRoute(req, res, path);
-
     // Test and console endpoints: driven by the runner, never shown on screen.
     if (path === "/__test/reset" && req.method === "POST") {
       db = seed();
@@ -281,6 +278,9 @@ const server = createServer(async (req, res) => {
         consoleState = { ...consoleState, ...JSON.parse((await body(req)).raw || "{}") };
       return send(res, 200, JSON.stringify(consoleState), "application/json");
     }
+
+    if (host === "webmail.test") return send(res, 200, webmail(path));
+    if (host === "erp.meridian.test") return erpRoute(req, res, path);
 
     if (path === "/") return redirect(res, "/contacts");
     if (path === "/contacts")

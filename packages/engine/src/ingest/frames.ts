@@ -58,11 +58,15 @@ export type KeyframeOptions = {
    * typing 13–26 and screen changes 129+.
    */
   minChanged: number;
-  /** Keep at least one keyframe every this many frames, so long static stretches are still seen. */
+  /**
+   * Keep at least one keyframe every this many frames. Repeated clicks that
+   * change nothing on screen (D06: Save pressed four times) are only visible
+   * as a sequence, so the floor is two seconds at 2 fps.
+   */
   maxGap: number;
 };
 
-export const DEFAULT_KEYFRAMES: KeyframeOptions = { levels: 16, minChanged: 20, maxGap: 20 };
+export const DEFAULT_KEYFRAMES: KeyframeOptions = { levels: 16, minChanged: 20, maxGap: 4 };
 
 /**
  * Pick keyframes from DIFF_W×DIFF_H thumbnails: the first frame, every frame

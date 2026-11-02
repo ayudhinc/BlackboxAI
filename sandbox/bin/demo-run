@@ -7,6 +7,10 @@ id="${1:?usage: demo-run <task id> [label]}"
 label="${2:-$id}"
 
 PORT=80 node /opt/blackbox/apps/crm/server.ts >/tmp/crm.log 2>&1 &
+# Remote-desktop tasks: the noVNC viewer bridges to the Meridian container's VNC server.
+if [[ "$id" =~ ^D1[0-2]$ ]]; then
+  websockify --web /usr/share/novnc 0.0.0.0:6080 meridian:5900 >/tmp/websockify.log 2>&1 &
+fi
 for _ in $(seq 1 50); do curl -sf http://crm.acme.test/__console/state >/dev/null && break; sleep 0.1; done
 
 # Native runs: the runtime listener starts first, so the AT-SPI registry is up before Chromium.

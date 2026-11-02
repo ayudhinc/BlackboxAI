@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# The "remote" side: Meridian ERP in a kiosk browser, served over VNC on 5900.
+# Run in its own container on the sandbox's network (alias "meridian").
+set -euo pipefail
+HOST=0.0.0.0 PORT=80 node /opt/blackbox/apps/crm/server.ts >/tmp/erp.log 2>&1 &
+for _ in $(seq 1 50); do curl -sf -H "Host: erp.meridian.test" http://127.0.0.1/ >/dev/null && break; sleep 0.1; done
+chromium --no-sandbox --disable-infobars --no-first-run --kiosk --window-position=0,0 \
+  --window-size="${SCREEN_W},${SCREEN_H}" --user-data-dir=/tmp/chrome-erp "http://erp.meridian.test/" </dev/null >/tmp/chromium.log 2>&1 &
+sleep 3
+exec x11vnc -display "$DISPLAY" -forever -shared -nopw -rfbport 5900 -quiet

@@ -19,7 +19,13 @@ const Meta = z.object({
   mode: z.enum(["video", "native"]),
   agent: z.object({ vendor: z.string(), model: z.string() }),
   failure: z.string().nullable(),
+  surface: z.string().optional(),
 });
+
+/** Remote-desktop runs (D10–D12) are on the canvas ERP through noVNC; the rest on the CRM. */
+const surfaceFor = (id: string, meta: z.infer<typeof Meta>) =>
+  meta.surface ??
+  (/^D1[0-2]$/.test(id) ? "noVNC · Meridian ERP (remote desktop)" : "Chromium · Acme CRM");
 
 loadEnv();
 const [policyId, ...ids] = process.argv.slice(2);
@@ -47,7 +53,7 @@ try {
       task: meta.instruction,
       agentVendor: meta.agent.vendor,
       agentModel: meta.agent.model,
-      surface: "Chromium · Acme CRM",
+      surface: surfaceFor(id, meta),
       mode: native ? "native" : "video",
       policyId,
       status: "uploaded",

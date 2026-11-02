@@ -6,7 +6,7 @@
 import { execFileSync, spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { Driver } from "./driver.ts";
-import { TASKS } from "./tasks.ts";
+import { NOVNC_URL, TASKS } from "./tasks.ts";
 
 const SCRIPT_VERSION = "scripted@1.0.0";
 const [id, labelArg] = process.argv.slice(2);
@@ -20,9 +20,16 @@ const post = (path: string, body: unknown) =>
 
 await post("/__test/reset", {});
 if (task.faults) await post("/__test/faults", task.faults);
+if (task.remote) {
+  const remote = (path: string, body: unknown) =>
+    fetch(`http://meridian${path}`, { method: "POST", body: JSON.stringify(body) });
+  await remote("/__test/reset", {});
+  if (task.remote.faults) await remote("/__test/faults", task.remote.faults);
+}
 
 const d = await Driver.connect();
-await d.page.goto("http://crm.acme.test/contacts");
+await d.page.goto(task.remote ? NOVNC_URL : "http://crm.acme.test/contacts");
+if (task.remote) await d.wait(3000); // let the viewer connect and draw the remote screen
 await d.status(
   `Task: ${task.instruction.slice(0, 110)}${task.instruction.length > 110 ? "…" : ""}`,
 );
@@ -79,6 +86,7 @@ writeFileSync(
       id: task.id,
       taskId: task.taskId,
       instruction: task.instruction,
+      surface: task.remote ? "noVNC · Meridian ERP (remote desktop)" : "Chromium · Acme CRM",
       mode: task.native ? "native" : "video",
       agent: { vendor: "blackbox", model: SCRIPT_VERSION },
       failure: failure ? String(failure) : null,

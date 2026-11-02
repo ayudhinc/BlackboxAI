@@ -136,6 +136,31 @@ export class Driver {
     await sleep(900);
   }
 
+  /** Click the middle of the remote-desktop viewer so keys go to the remote session. */
+  async focusViewer(): Promise<void> {
+    const box = await this.page.evaluate(() => ({
+      x: window.screenX + window.outerWidth / 2,
+      y: window.screenY + window.outerHeight - window.innerHeight + window.innerHeight / 2,
+    }));
+    await this.glide(Math.round(box.x), Math.round(box.y));
+    xdo("click", "1");
+    this.log("click", "remote desktop viewer");
+    await sleep(800);
+  }
+
+  /** Keys into whatever has focus, logged under the given label (remote sessions have no selectors). */
+  async keys(keys: string, target: string): Promise<void> {
+    xdo("key", keys);
+    this.log("key", target);
+    await sleep(700);
+  }
+
+  async typeKeys(text: string, field: string): Promise<void> {
+    xdo("type", "--delay", "90", text);
+    this.log("type", `field '${field}'`, field);
+    await sleep(600);
+  }
+
   async key(keys: string, target = keys): Promise<void> {
     xdo("key", keys);
     this.log("key", target);
