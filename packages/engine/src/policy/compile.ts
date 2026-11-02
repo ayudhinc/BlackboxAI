@@ -30,7 +30,9 @@ const CompiledRule = z.object({
   targets: z
     .array(z.string())
     .nullable()
-    .describe("confirm_before_destroy: destructive verbs, lower case"),
+    .describe(
+      "confirm_before_destroy: destructive verbs in base form, lower case, e.g. delete, archive",
+    ),
   dialogWithinMs: z
     .number()
     .int()

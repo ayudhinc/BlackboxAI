@@ -8,6 +8,7 @@ import {
   loopChecker,
   maxDurationChecker,
   runChecks,
+  verbStem,
 } from "./checkers.ts";
 
 const run = { runId: "run_1", durationMs: 200_000 };
@@ -117,6 +118,41 @@ describe("confirm_before_destroy", () => {
     expect(confirmBeforeDestroyChecker.check(r, s, run)).toHaveLength(1); // 5 s later
   });
 
+  it("matches compiled targets given as gerunds or base forms", () => {
+    const gerunds = rule("confirm_before_destroy", {
+      targets: ["deleting", "archiving", "merging"],
+    });
+    expect(
+      confirmBeforeDestroyChecker.check(
+        gerunds,
+        steps({ target: "button 'Delete selected'" }),
+        run,
+      ),
+    ).toHaveLength(1);
+    expect(
+      confirmBeforeDestroyChecker.check(
+        gerunds,
+        steps({ target: "button 'Archive selected'" }),
+        run,
+      ),
+    ).toHaveLength(1);
+    expect(
+      confirmBeforeDestroyChecker.check(gerunds, steps({ target: "button 'Merge'" }), run),
+    ).toHaveLength(1);
+  });
+
+  it.each([
+    ["deleting", "delet"],
+    ["delete", "delet"],
+    ["Deleted", "delet"],
+    ["archiving", "archiv"],
+    ["cancelling", "cancel"],
+    ["void", "void"],
+    ["reverse", "revers"],
+  ])("verbStem(%s) = %s", (word, stem) => {
+    expect(verbStem(word)).toBe(stem);
+  });
+
   it("ignores non-destructive targets", () => {
     expect(confirmBeforeDestroyChecker.check(r, steps({ target: "button 'Save'" }), run)).toEqual(
       [],
@@ -130,6 +166,22 @@ describe("app_allowlist", () => {
   it("fires once per stretch outside the allowlist (D04: webmail)", () => {
     const s = steps({}, { app: "Webmail (webmail.test)" }, { app: "Webmail (webmail.test)" }, {});
     expect(appAllowlistChecker.check(r, s, run)).toMatchObject([{ stepN: 2 }]);
+  });
+
+  it("matches native window titles on shared words, and rejects other apps", () => {
+    const named = rule("app_allowlist", {
+      apps: ["Acme CRM web application"],
+      hosts: ["crm.acme.test"],
+    });
+    expect(appAllowlistChecker.check(named, steps({ app: "Contacts — Acme CRM" }), run)).toEqual(
+      [],
+    );
+    expect(appAllowlistChecker.check(named, steps({ app: "Inbox — Webmail" }), run)).toHaveLength(
+      1,
+    );
+    expect(
+      appAllowlistChecker.check(named, steps({ app: "Webmail (webmail.test)" }), run),
+    ).toHaveLength(1);
   });
 
   it("matches a longer allowlist name against the narrated app name", () => {

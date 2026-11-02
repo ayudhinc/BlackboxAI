@@ -4,8 +4,8 @@ import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LiveRefresh } from "@/components/live";
 import { db } from "@/lib/server";
-import { LiveRefresh } from "../../runs/[id]/live";
 import { ResolveForm, SignOffForm } from "./forms";
 
 export const metadata: Metadata = { title: "Policy" };

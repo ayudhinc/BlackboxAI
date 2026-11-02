@@ -19,6 +19,11 @@ export function parseRuntimeJsonl(runId: string, jsonl: string): RuntimeEvent[] 
     .sort((a, b) => a.tMs - b.tMs);
 }
 
+/** Window titles carry the browser's name after the page title; the page title is the app. */
+export function windowTitle(window: string): string {
+  return window.replace(/\s+-\s+(Google Chrome for Testing|Google Chrome|Chromium)$/, "");
+}
+
 const label = (e: RuntimeEvent) => (e.name ? `'${e.name}'` : "(unnamed)");
 
 export function mapRuntimeEvents(
@@ -39,6 +44,8 @@ export function mapRuntimeEvents(
     target: string,
     field: string | null = null,
   ) => {
+    // Every event names its own window, so a step's app never depends on an earlier focus event.
+    if (e.window && e.event !== "agent.claim") app = windowTitle(e.window);
     const frame = frameAt(e.tMs);
     const before = Math.max(0, frame - 1);
     steps.push({
@@ -63,10 +70,7 @@ export function mapRuntimeEvents(
   for (const e of events) {
     switch (e.event) {
       case "window.focus":
-        if (e.window !== app) {
-          app = e.window;
-          push(e, "navigate", `window ${e.window}`);
-        }
+        if (windowTitle(e.window) !== app) push(e, "navigate", `window ${windowTitle(e.window)}`);
         break;
       case "button.press":
       case "link.activate":

@@ -52,6 +52,23 @@ describe("native event mapping", () => {
     expect(agentClaim).toBe("Done.");
   });
 
+  it("takes each step's app from its own event, before any focus event", () => {
+    const events = parseRuntimeJsonl(
+      "run_1",
+      JSON.stringify({
+        tMs: 100,
+        pid: 1,
+        window: "Contacts — Acme CRM - Google Chrome for Testing",
+        event: "text.insert",
+        role: "entry",
+        name: "Search contacts",
+        value: "[redacted]",
+      }),
+    );
+    const { steps } = mapRuntimeEvents("run_1", events, signatures, 500);
+    expect(steps[0]?.app).toBe("Contacts — Acme CRM");
+  });
+
   it("rejects a malformed line with its line number", () => {
     expect(() => parseRuntimeJsonl("run_1", '{"tMs":0}\n')).toThrow(/line 1/);
   });

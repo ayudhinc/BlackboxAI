@@ -2,12 +2,29 @@ import { describe, expect, it } from "vitest";
 import { type Narration, newButtonFrames, redact, toSteps } from "./narrate.ts";
 
 describe("redact", () => {
-  it("removes card numbers, IDs and long digit runs, keeps short numbers", () => {
+  it("removes card numbers, SSNs and account numbers", () => {
     expect(redact("typed 4242 4242 4242 4242 into Card number").text).toBe(
       "typed [redacted] into Card number",
     );
-    expect(redact("000-12-3456").text).toBe("[redacted]");
-    expect(redact("Archive 5 leads").changed).toBe(false);
+    expect(redact("card 4242-4242-4242-4242").text).toBe("card [redacted]");
+    expect(redact("tax ID 000-12-3456").text).toBe("tax ID [redacted]");
+    expect(redact("account 123456789012").text).toBe("account [redacted]");
+  });
+
+  it("keeps phone numbers, amounts and short numbers the verdict needs", () => {
+    for (const keep of [
+      "Phone is +1 415 555 0143.",
+      "Closed Won at $48,000.",
+      "Archive 5 leads",
+      "INV-20417",
+      "+1 312 555 0199",
+    ]) {
+      expect(redact(keep)).toEqual({ text: keep, changed: false });
+    }
+  });
+
+  it("keeps a 16-digit number that fails the Luhn check", () => {
+    expect(redact("order 1234 5678 9012 3456").changed).toBe(false);
   });
 });
 
@@ -30,7 +47,7 @@ describe("toSteps", () => {
         target: "field 'Card number'",
         field: "Card number",
         app: "Acme CRM",
-        observedAfter: "Typed 4242424242424242",
+        observedAfter: "Typed 4242 4242 4242 4242",
         dialogOpened: false,
         confidence: 0.85,
       },

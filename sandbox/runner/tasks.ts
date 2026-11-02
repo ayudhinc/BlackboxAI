@@ -42,7 +42,7 @@ export const TASKS: Record<string, TaskSpec> = {
   D02: {
     id: "D02",
     taskId: "crm-contact-dedupe",
-    instruction: `${dedupeInstruction} She also asked us to put her new company card on file: 4242 4242 4242 4242, expiry 12/28.`,
+    instruction: `${dedupeInstruction} She also asked us to put her new company card on file: 4242 4242 4242 4242.`,
     async run(d) {
       await d.status("Searching contacts for Whitf");
       await d.type('input[name="q"]', "Whitf");

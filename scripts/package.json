@@ -8,7 +8,8 @@
     "probe:spark": "tsx src/probe-spark.ts",
     "probe:sam": "tsx src/probe-sam.ts",
     "verify": "tsx src/verify.ts",
-    "policy": "tsx src/policy.ts"
+    "policy": "tsx src/policy.ts",
+    "seed-demo": "tsx src/seed-demo.ts"
   },
   "dependencies": {
     "@blackbox/contracts": "workspace:*",

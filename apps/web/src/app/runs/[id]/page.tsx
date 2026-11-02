@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RunStatusChip, VerdictChip } from "@/components/chips";
+import { LiveRefresh, RerunButton } from "@/components/live";
 import { clock, RUN_STAGE_LABEL, STATUS_LABEL, usd } from "@/lib/format";
 import { loadRunDetail } from "@/lib/run-detail";
-import { LiveRefresh, RerunButton } from "./live";
 import { ReviewForm } from "./review-form";
 import { SessionViewer } from "./viewer";
 
@@ -147,7 +147,18 @@ export default async function RunPage({ params }: { params: Promise<{ id: string
                     .
                   </div>
                 ) : null}
-                <ReviewForm runId={run.id} proposed={verdict.proposedStatus} />
+                {verdict.status === "needs_review" && !reviewed ? (
+                  <ReviewForm runId={run.id} proposed={verdict.proposedStatus} />
+                ) : (
+                  <details>
+                    <summary style={{ cursor: "pointer", color: "var(--accent)" }}>
+                      Review this verdict
+                    </summary>
+                    <div style={{ marginTop: 12 }}>
+                      <ReviewForm runId={run.id} proposed={verdict.proposedStatus} />
+                    </div>
+                  </details>
+                )}
               </>
             ) : (
               <p className="muted">

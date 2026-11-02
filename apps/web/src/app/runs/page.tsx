@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LiveRefresh } from "@/components/live";
 import { RunsTable } from "@/components/runs-table";
 import { listRuns } from "@/lib/queries";
 
@@ -9,6 +10,7 @@ export default async function RunsPage() {
   const runs = await listRuns();
   return (
     <main className="page">
+      <LiveRefresh active={runs.some((r) => !["done", "failed"].includes(r.status))} />
       <div className="page-head">
         <div>
           <h1>Runs</h1>

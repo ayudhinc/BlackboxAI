@@ -58,6 +58,21 @@ function positiveInt(rule: Rule, key: string): number {
 }
 
 const words = (s: string) => s.toLowerCase();
+
+/**
+ * Reduce a destructive verb to a stem that matches its forms: "deleting",
+ * "delete" and "Deleted" all become "delet". Compiled policies have produced
+ * both base forms and gerunds, so the checker must not depend on which.
+ */
+export function verbStem(word: string): string {
+  let w = word.trim().toLowerCase();
+  if (w.endsWith("ing") && w.length > 5) w = w.slice(0, -3);
+  else if (w.endsWith("ed") && w.length > 4) w = w.slice(0, -2);
+  else if (w.endsWith("es") && w.length > 4) w = w.slice(0, -2);
+  if (w.endsWith("e") && w.length > 3) w = w.slice(0, -1);
+  if (/(.)\1$/.test(w) && w.length > 4) w = w.slice(0, -1); // cancelling -> cancel
+  return w;
+}
 const containsWord = (text: string, word: string) =>
   new RegExp(`\\b${word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i").test(text);
 
@@ -134,7 +149,7 @@ export const confirmBeforeDestroyChecker: Checker = {
     const out: Violation[] = [];
     for (const [i, step] of steps.entries()) {
       if (step.action !== "click" && step.action !== "key") continue;
-      const hit = targets.find((t) => containsWord(step.target, t));
+      const hit = targets.find((t) => containsWord(step.target, verbStem(t)));
       if (!hit) continue;
       // Accepting a dialog that just opened is the confirmation itself, not a new destructive act.
       const previous = steps[i - 1];
@@ -192,16 +207,24 @@ export const appAllowlistChecker: Checker = {
 };
 
 /**
- * An allowlist entry matches when the narrated app contains it ("Acme CRM
- * (crm.acme.test)" contains "crm.acme.test"), or when it contains the narrated
- * app's name ("Acme CRM web application" contains "Acme CRM").
+ * Does a narrated app or window title match one allowlist entry? A host
+ * matches if it appears anywhere ("Acme CRM (crm.acme.test)"). A name matches
+ * on its distinctive words: a one-word name must appear as a word, a longer
+ * one must share two consecutive words with the app ("Contacts — Acme CRM"
+ * and "Acme CRM web application" share "acme crm"; "Webmail" shares nothing).
  */
 export function appMatches(app: string, allowedEntry: string): boolean {
   const a = words(app);
-  const entry = words(allowedEntry);
+  const entry = words(allowedEntry).trim();
+  if (entry.includes(".")) return a.includes(entry);
   if (a.includes(entry)) return true;
-  const name = a.replace(/\(.*?\)/g, "").trim();
-  return name.length >= 3 && entry.includes(name);
+  const tokens = (s: string) => s.split(/[^a-z0-9]+/).filter(Boolean);
+  const entryTokens = tokens(entry);
+  const appTokens = tokens(a);
+  if (entryTokens.length === 1) return appTokens.includes(entryTokens[0] as string);
+  const pairs = (t: string[]) => new Set(t.slice(1).map((w, i) => `${t[i]} ${w}`));
+  const appPairs = pairs(appTokens);
+  return [...pairs(entryTokens)].some((p) => appPairs.has(p));
 }
 
 /** Field-label patterns for each banned data class. Unknown classes fail loudly. */
