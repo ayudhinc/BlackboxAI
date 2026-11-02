@@ -1,6 +1,17 @@
 # Deploy runbook (build plan, day 8)
 
-Nothing here has been run. It needs Dushyant's go-ahead, and the steps marked **you** need his accounts or his hands: passwords, payment details and account creation are his alone.
+Go-ahead given 2026-11-01. Steps marked **you** need Dushyant's accounts or hands: passwords, payment details and account creation are his alone.
+
+## Status (2026-11-02)
+
+| Piece | State |
+|---|---|
+| GitHub | `ayudhinc/BlackboxAI`, private, `main` pushed |
+| Neon | Project `blackboxai` (`winter-voice-41686139`), org Ayudh, aws-us-east-1, all migrations applied |
+| Vercel | Project `blackboxai` (team ayudh-incs-projects), root `apps/web`, connected to the repo; production build READY at `https://blackboxai-ayudh-incs-projects.vercel.app`. Env set: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `DAILY_BUDGET_USD`. **Blocked:** Vercel Deployment Protection (Vercel Authentication) is on, so the URL redirects to Vercel SSO; turning it off is Dushyant's call (Settings › Deployment Protection). The app has its own sign-in. |
+| R2 | Not started: needs Cloudflare access (wrangler is not installed or signed in) |
+| Fly | Not started: `fly auth login` needed |
+| Operator account | Not created: Dushyant's password |
 
 ## What runs where
 
@@ -29,9 +40,10 @@ The sandbox stays on the laptop. The hosted app verifies any uploaded recording,
 6. Deploy the worker from the repository root:
    `fly deploy . --config apps/worker/fly.toml --dockerfile apps/worker/Dockerfile`.
    Check: `fly checks list -a blackbox-worker` shows the health check passing.
-7. **You:** create the Vercel project from the GitHub repository, with root directory `apps/web`. This needs the repository pushed, which needs your word. Set its environment variables:
+7. Done through the Vercel REST API (no `vercel link`, which would pull env into `.env.local`): project created from the GitHub repository, root `apps/web`. Its environment variables:
    `DATABASE_URL`, `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `BETTER_AUTH_URL` (the production URL), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `DAILY_BUDGET_USD`.
-8. **You:** create the operator account against Neon: `DATABASE_URL=... pnpm create-operator <email> "<name>"`. It asks for the password on the terminal.
+8. **You:** create the operator account against Neon. It asks for the password on the terminal:
+   `DATABASE_URL="$(neonctl connection-string --project-id winter-voice-41686139 --pooled)" pnpm create-operator <email> "<name>"`
 9. Sign in on the hosted URL, compile and sign off the two demo policies, and upload one recording. Done when the run reaches a verdict.
 
 ## Never
