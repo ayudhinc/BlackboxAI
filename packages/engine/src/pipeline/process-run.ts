@@ -139,7 +139,7 @@ export async function processRun(deps: PipelineDeps, runId: string): Promise<voi
         framePath: media.framePath,
         tracks,
       });
-      steps = toSteps(runId, narration, media.keyframes, media.signatures, FRAME_MS);
+      steps = toSteps(runId, narration, media.keyframes, media.signatures, FRAME_MS, media.changed);
       agentClaim = narration.agentClaim;
       log(`narrate: ${steps.length} steps`);
     }

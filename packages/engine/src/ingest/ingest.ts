@@ -8,6 +8,7 @@ import { mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import {
+  changedPixels,
   DEFAULT_KEYFRAMES,
   DIFF_H,
   DIFF_W,
@@ -39,6 +40,8 @@ export type IngestResult = {
   framePath: (frame: number) => string;
   signatures: string[];
   keyframes: number[];
+  /** Did the screen visibly change between two frames? Same metric as keyframe selection. */
+  changed: (from: number, to: number) => boolean;
   chunks: Chunk[];
 };
 
@@ -107,6 +110,12 @@ export async function ingest(recordingPath: string, workDir: string): Promise<In
     framePath: (frame) => join(framesDir, `${String(frame + 1).padStart(6, "0")}.jpg`),
     signatures: thumbs.map(screenSignature),
     keyframes: selectKeyframes(diffThumbs, DEFAULT_KEYFRAMES),
+    changed: (from, to) => {
+      const a = diffThumbs[from];
+      const b = diffThumbs[to];
+      if (!a || !b) return true;
+      return changedPixels(a, b, DEFAULT_KEYFRAMES.levels) >= DEFAULT_KEYFRAMES.minChanged;
+    },
     chunks,
   };
 }

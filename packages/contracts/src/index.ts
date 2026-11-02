@@ -106,7 +106,8 @@ export const Step = z.object({
   field: z.string().nullable(), // label or accessible name of the field typed into
   observedAfter: z.string(),
   dialogOpened: z.boolean(), // a confirmation or modal dialog appeared after this step
-  screenSignature: z.string().nullable(), // keyframe hash, for loop detection
+  screenSignature: z.string().nullable(), // keyframe hash of the screen the action was taken on
+  madeProgress: z.boolean().nullable(), // the screen visibly changed after the action; null when unknown
   source: Mode,
   confidence: unit, // 1 for native
   evidenceFrames: z.array(z.number().int().min(0)),

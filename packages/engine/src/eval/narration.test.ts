@@ -13,6 +13,7 @@ const s = (n: number, tMs: number, action: Step["action"], target: string): Step
   observedAfter: "",
   dialogOpened: false,
   screenSignature: null,
+  madeProgress: null,
   source: "video",
   confidence: 0.9,
   evidenceFrames: [],

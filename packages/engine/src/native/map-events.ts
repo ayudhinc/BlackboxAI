@@ -59,6 +59,7 @@ export function mapRuntimeEvents(
       observedAfter: "",
       dialogOpened: false,
       screenSignature: signatures[before] ?? null,
+      madeProgress: null,
       source: "native",
       confidence: 1,
       evidenceFrames:

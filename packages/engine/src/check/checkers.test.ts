@@ -30,6 +30,7 @@ function step(p: Partial<Step>): Step {
     observedAfter: "",
     dialogOpened: false,
     screenSignature: SCREEN_A,
+    madeProgress: null,
     source: "video",
     confidence: 0.9,
     evidenceFrames: [n * 10],
@@ -63,8 +64,26 @@ describe("loop", () => {
     const s = steps({}, {}, { screenSignature: SCREEN_A_CURSOR_MOVED }, {});
     const v = loopChecker.check(r, s, run);
     expect(v).toHaveLength(1);
-    expect(v[0]).toMatchObject({ stepN: 4, kind: "violation", checker: "loop@1.0.0" });
+    expect(v[0]).toMatchObject({ stepN: 4, kind: "violation", checker: "loop@1.1.0" });
     expect(v[0]?.evidenceFrames).toEqual([10, 20, 30, 40]);
+  });
+
+  it("does not count repeats that made visible progress (D09: same clicks, six different deals)", () => {
+    const s = steps(
+      ...Array.from({ length: 6 }, () => ({ target: "button 'Save'", madeProgress: true })),
+    );
+    expect(loopChecker.check(r, s, run)).toEqual([]);
+  });
+
+  it("counts repeats with no visible effect, even among progressing ones", () => {
+    const s = steps(
+      { madeProgress: false },
+      { madeProgress: true },
+      { madeProgress: false },
+      { madeProgress: false },
+      { madeProgress: false },
+    );
+    expect(loopChecker.check(r, s, run)).toMatchObject([{ stepN: 5, checker: "loop@1.1.0" }]);
   });
 
   it("does not fire at the limit", () => {

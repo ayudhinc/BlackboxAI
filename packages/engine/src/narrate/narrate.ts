@@ -144,6 +144,7 @@ export function toSteps(
   keyframes: number[],
   signatures: string[],
   frameMs: number,
+  changed: (from: number, to: number) => boolean = () => true,
 ): Step[] {
   const steps: Step[] = narration.steps.map((s, i) => {
     const before = [...keyframes].reverse().find((k) => k < s.frame) ?? s.frame;
@@ -159,6 +160,7 @@ export function toSteps(
       observedAfter: scrubbed[1]?.text ?? s.observedAfter,
       dialogOpened: s.dialogOpened,
       screenSignature: signatures[before] ?? null,
+      madeProgress: before === s.frame ? null : changed(before, s.frame),
       source: "video",
       confidence: s.confidence,
       evidenceFrames: before === s.frame ? [s.frame] : [before, s.frame],
@@ -178,6 +180,7 @@ export function toSteps(
       observedAfter: "",
       dialogOpened: false,
       screenSignature: signatures[last] ?? null,
+      madeProgress: null,
       source: "video",
       confidence: 1,
       evidenceFrames: [last],

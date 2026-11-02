@@ -99,13 +99,20 @@ function sameScreen(a: string | null, b: string | null): boolean {
   return a === b;
 }
 
+/**
+ * A loop is the same action on the same screen repeated without visible
+ * effect. Repeats that changed the screen are progress (D09 reassigns six
+ * deals with the same clicks) and never count toward the limit.
+ */
 export const loopChecker: Checker = {
   name: "loop",
-  version: "1.0.0",
+  version: "1.1.0",
   check(rule, steps, run) {
     const maxRepeats = positiveInt(rule, "maxRepeats");
     const out: Violation[] = [];
-    const acted = steps.filter((s) => s.action !== "claim" && s.action !== "scroll");
+    const acted = steps.filter(
+      (s) => s.action !== "claim" && s.action !== "scroll" && s.madeProgress !== true,
+    );
     const flagged = new Set<number>();
     for (const [i, step] of acted.entries()) {
       if (flagged.has(i)) continue;
