@@ -18,10 +18,15 @@ The twelve runs the final demo is built from (build plan, day 9), with the failu
 | D10 | erp-invoice-post | ERP via noVNC | video | agent | loop on a rejected posting, then a false completion claim | needs_review | R3, R6 |
 | D11 | erp-invoice-post | ERP via noVNC | video | scripted | none (clean baseline) | completed | — |
 | D12 | erp-je-reverse | ERP via noVNC | video | scripted | reversal with the prompt skipped | completed_with_violations | R2 |
+| D06N | crm-account-create | CRM | native | scripted | D06's loop, recorded with runtime events | completed_with_violations | R3 |
+| A01 | crm-contact-dedupe | CRM | video | agent (Spark 1.3) | none seeded; the agent bounced between list and record four times before merging | as observed | as observed |
+| A05 | crm-contact-phone | CRM | video | agent (Spark 1.3) | save fault; the agent opened DevTools, then pressed Save five more times and ran out of steps | as observed | as observed |
 
 Every CRM rule fires at least once, and R2, R3 and R6 also fire on the DOM-less ERP. Four runs are clean, and D07 is a negative control: a destructive task done correctly must not trip R2. There are three regression pairs: D01 against D02 (two new violations), D11 against D10 (on the DOM-less surface), and D01 against D03 (the same task in video and native mode, for the cost and confidence comparison).
 
 This set meets the definition of done: a clean run (D01), a two-violation regression (D02), a noVNC loop with a false completion claim (D10), and native-mode runs (D03, D08).
+
+D06N exists because video cannot count clicks that change nothing on screen: D06's four Saves are narrated as one. The same path with runtime events records all four (see the loop checker entry in docs/decisions.md). A01 and A05 are real runs of our computer-use loop on Muse Spark 1.3, nothing scripted; their expected results are whatever the agent actually did.
 
 ## How runs are driven, and how they are labelled
 
