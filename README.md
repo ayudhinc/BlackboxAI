@@ -27,7 +27,7 @@ Every model call writes a lineage row: model, prompt hash, tokens or frames, cos
 
 ## Measured so far
 
-On the scripted demo runs (ground truth from the runner's own step log): narration recall 0.88 and precision 0.88 over 49 steps in six video runs, before the two-second keyframe floor. Full numbers and every miss: [docs/decisions.md](docs/decisions.md).
+Fifteen demo runs verified end to end: 12 scripted runs match their specs exactly, including a two-violation regression, a loop and false claim on a remote desktop with no DOM, and native-mode runs. The two real Spark agent runs get correct verdicts. Narration against the scripted runs' own step logs: recall 0.79, precision 0.74 over 120 steps (CRM 0.91–1.00 recall; keyboard-only steps on the canvas ERP 0.33–0.56, which is the case for native mode). Video mode cannot count clicks that change nothing on screen; native mode can. Every result and miss: [docs/decisions.md](docs/decisions.md). API spend for the whole build so far: $9.57.
 
 ## Run it locally
 
