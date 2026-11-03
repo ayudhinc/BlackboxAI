@@ -31,7 +31,7 @@ export const COVERAGE_NOTES = [
   "Video-mode steps are inferred from keyframes by a model and carry a confidence; native-mode steps come from runtime events.",
   "The data-class rule matches field labels, not field contents: a card number typed into a free-text field is not detected.",
   "The completion verdict is a model's judgement, labelled as such; rule findings come from deterministic checkers.",
-  "Typed values and long digit runs are redacted before storage.",
+  "Card, SSN and account numbers are redacted from stored text; the recording and its frames are kept as uploaded, so a number visible on screen stays visible in them.",
 ];
 
 export function canonicalJson(value: unknown): string {
