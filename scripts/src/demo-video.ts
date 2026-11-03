@@ -375,9 +375,15 @@ for (const [a, b] of cuts) {
 }
 keep.push([from, now()]);
 
+// The submission form asks for a three-minute video: speed up slightly if over.
+const LIMIT_MS = 178_000;
+const speed = Math.max(1, shift(now()) / LIMIT_MS);
+
 const filter = `${keep
   .map(([a, b], i) => `[0:v]trim=start=${a / 1000}:end=${b / 1000},setpts=PTS-STARTPTS[v${i}]`)
-  .join(";")};${keep.map((_, i) => `[v${i}]`).join("")}concat=n=${keep.length}:v=1:a=0,fps=30[out]`;
+  .join(
+    ";",
+  )};${keep.map((_, i) => `[v${i}]`).join("")}concat=n=${keep.length}:v=1:a=0,setpts=PTS/${speed},fps=30[out]`;
 const mp4 = `${OUT}blackboxai-demo.mp4`;
 execFileSync("ffmpeg", [
   "-y",
@@ -416,9 +422,12 @@ const stamp = (ms: number) => {
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}:${String(d.getUTCSeconds()).padStart(2, "0")},${String(d.getUTCMilliseconds()).padStart(3, "0")}`;
 };
 const srt = cues
-  .map((c, i) => `${i + 1}\n${stamp(shift(c.start))} --> ${stamp(shift(c.end))}\n${c.text}\n`)
+  .map(
+    (c, i) =>
+      `${i + 1}\n${stamp(shift(c.start) / speed)} --> ${stamp(shift(c.end) / speed)}\n${c.text}\n`,
+  )
   .join("\n");
 writeFileSync(`${OUT}blackboxai-demo.srt`, srt);
 console.log(
-  `Wrote ${mp4} (${(shift(now()) / 1000).toFixed(0)} s) and blackboxai-demo.srt; cut ${cuts.length} waits.`,
+  `Wrote ${mp4} (${(shift(now()) / speed / 1000).toFixed(0)} s, ${speed.toFixed(2)}x) and blackboxai-demo.srt; cut ${cuts.length} waits.`,
 );
