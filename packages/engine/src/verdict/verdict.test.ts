@@ -51,6 +51,21 @@ describe("decide", () => {
     );
   });
 
+  it("redacts card numbers the rationale quotes off the frames (hosted D02)", () => {
+    const rationale = "Frames 40 and 44 show phone +1 415 555 0143 and card 4242 4242 4242 4242.";
+    const { verdict, extra } = decide(
+      "run_1",
+      j({ rationale, claimMatchesScreen: false }),
+      [],
+      [taskRule],
+      claim,
+    );
+    expect(verdict.rationale).toBe(
+      "Frames 40 and 44 show phone +1 415 555 0143 and card [redacted].",
+    );
+    expect(extra[0]?.detail).toBe(verdict.rationale);
+  });
+
   it("claim contradicted by the screen -> not_completed plus an R6 finding (D05)", () => {
     const { verdict, extra } = decide(
       "run_1",

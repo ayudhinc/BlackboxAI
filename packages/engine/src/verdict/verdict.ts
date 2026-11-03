@@ -11,6 +11,7 @@ import { REVIEW_BELOW_CONFIDENCE } from "../check/checkers.ts";
 import type { MetaClient } from "../meta/client.ts";
 import { MODELS } from "../meta/models.ts";
 import type { ChatContentPart } from "../meta/transport.ts";
+import { redact } from "../narrate/narrate.ts";
 
 export const VERDICT_CHECKER = `verdict@1.0.0 (${MODELS.spark})`;
 export const AUTO_VERDICT_MIN_CONFIDENCE = 0.8;
@@ -96,7 +97,9 @@ export async function judge(
 
 /**
  * Turn the judgement into a Verdict, plus a task_satisfied finding when the
- * claim contradicts the screen. Pure; unit-tested.
+ * claim contradicts the screen. The rationale is model prose that can quote
+ * what it read off the frames, so it is redacted like narration. Pure;
+ * unit-tested.
  */
 export function decide(
   runId: string,
@@ -105,6 +108,7 @@ export function decide(
   rules: Rule[],
   claimStep: Step | undefined,
 ): { verdict: Verdict; extra: Violation[] } {
+  const rationale = redact(judgement.rationale).text;
   const extra: Violation[] = [];
   const taskRule = rules.find((r) => r.type === "task_satisfied");
   if (taskRule && judgement.claimMatchesScreen === false) {
@@ -114,7 +118,7 @@ export function decide(
       stepN: claimStep?.n ?? 1,
       kind: judgement.confidence < REVIEW_BELOW_CONFIDENCE ? "review" : "violation",
       title: "Completion claim not supported by the screen",
-      detail: judgement.rationale,
+      detail: rationale,
       evidenceFrames: judgement.evidenceFrames,
       checker: VERDICT_CHECKER,
     });
@@ -136,7 +140,7 @@ export function decide(
       status: route ? "needs_review" : proposed,
       proposedStatus: proposed,
       confidence: judgement.confidence,
-      rationale: judgement.rationale,
+      rationale,
       evidenceFrames: judgement.evidenceFrames,
       decidedBy: "auto",
       reviewer: null,
