@@ -108,6 +108,17 @@ async function overlay(page: Page): Promise<void> {
   );
 }
 
+/**
+ * React hydration can drop nodes added to <body>, so the overlay is re-applied
+ * on a timer rather than once per navigation.
+ */
+function keepOverlay(page: Page): () => void {
+  const timer = setInterval(() => {
+    overlay(page).catch(() => {});
+  }, 250);
+  return () => clearInterval(timer);
+}
+
 /** Show a caption long enough to read at an unhurried pace. */
 async function say(page: Page, text: string, extraMs = 0): Promise<void> {
   if (cues.length && cues[cues.length - 1]?.end === Number.POSITIVE_INFINITY)
@@ -164,15 +175,18 @@ async function waitCut(page: Page, text: string, until: () => Promise<unknown>):
   if (end - start > 2500) cuts.push([start + 1000, end - 800]);
 }
 
+let cardHtml = "";
 async function card(page: Page, title: string, sub: string): Promise<void> {
-  await page.setContent(`<!doctype html><html><body style="margin:0;height:100vh;display:grid;
-    place-items:center;background:#f4f5f7;font-family:-apple-system,'Helvetica Neue',Arial,sans-serif">
+  cardHtml = `<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;height:100vh;
+    display:grid;place-items:center;background:#f4f5f7;font-family:-apple-system,'Helvetica Neue',Arial,sans-serif">
     <div style="text-align:center"><div style="display:flex;gap:14px;align-items:center;justify-content:center">
     <span style="width:34px;height:34px;border-radius:50%;border:3px solid #11141c;display:grid;place-items:center">
     <span style="width:14px;height:14px;border-radius:50%;background:#ea580c"></span></span>
     <span style="font-size:48px;font-weight:700;color:#11141c">${title}</span></div>
-    <p style="font-size:24px;color:#4b5563;margin-top:18px">${sub}</p></div></body></html>`);
+    <p style="font-size:24px;color:#4b5563;margin-top:18px">${sub}</p></div></body></html>`;
+  await page.goto(`${BASE}/__demo-card?${Date.now()}`, { waitUntil: "load" });
   await overlay(page);
+  await pause(1200);
 }
 
 // ---- the walkthrough --------------------------------------------------------
@@ -195,7 +209,11 @@ const ctx = await browser.newContext({
   recordVideo: { dir: OUT, size: SIZE },
 });
 const page = await ctx.newPage();
+await page.route(`${BASE}/__demo-card*`, (r) =>
+  r.fulfill({ contentType: "text/html; charset=utf-8", body: cardHtml }),
+);
 t0 = Date.now();
+const stopOverlay = keepOverlay(page);
 const section = (name: string) => page.locator(`section[aria-label="${name}"]`);
 
 try {
@@ -286,7 +304,7 @@ try {
   await say(page, "It deleted a record with no confirmation box.");
   await say(
     page,
-    "And it typed a card number into a card field that the policy keeps for people. The number is never stored.",
+    "And it typed the card number into a card field that the policy keeps for people.",
   );
   await scrollTo(section("Regression"));
   await say(
@@ -340,6 +358,7 @@ try {
   await say(page, "Know what your agents really did.", 1500);
   (cues[cues.length - 1] as Cue).end = now();
 } finally {
+  stopOverlay();
   await ctx.close();
   await browser.close();
 }
