@@ -1,1 +1,6 @@
-{ "extends": "../tsconfig.base.json", "include": ["src"] }
+{
+  "extends": "../tsconfig.base.json",
+  // DOM for the callbacks demo-video.ts runs inside the page.
+  "compilerOptions": { "lib": ["ES2023", "DOM"] },
+  "include": ["src"]
+}

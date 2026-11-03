@@ -13,15 +13,17 @@
     "eval-narration": "tsx src/eval-narration.ts",
     "agent-run": "tsx src/agent-run.ts",
     "create-operator": "tsx src/create-operator.ts",
-    "seed-dev-operator": "tsx src/seed-dev-operator.ts"
+    "seed-dev-operator": "tsx src/seed-dev-operator.ts",
+    "demo-video": "tsx src/demo-video.ts"
   },
   "dependencies": {
+    "@blackbox/auth": "workspace:*",
     "@blackbox/contracts": "workspace:*",
     "@blackbox/db": "workspace:*",
     "@blackbox/engine": "workspace:*",
-    "zod": "4.6.7",
     "drizzle-orm": "0.45.4",
-    "@blackbox/auth": "workspace:*"
+    "playwright-core": "1.64.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "tsx": "4.23.15"

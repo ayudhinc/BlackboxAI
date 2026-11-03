@@ -10,8 +10,12 @@ export type Job = typeof schema.jobs.$inferSelect;
 /** A job whose worker died is requeued after this long. */
 export const STALE_LOCK_MS = 15 * 60 * 1000;
 
+/**
+ * The claim is raw SQL for SKIP LOCKED; the job is then read through Drizzle,
+ * because raw rows carry timestamps as strings where Job types them as Dates.
+ */
 export async function claimJob(db: Db, workerId: string): Promise<Job | null> {
-  const result = await db.execute<Job>(sql`
+  const result = await db.execute<{ id: string }>(sql`
     update jobs set status = 'running', locked_at = now(), locked_by = ${workerId},
       attempts = attempts + 1
     where id = (
@@ -21,10 +25,12 @@ export async function claimJob(db: Db, workerId: string): Promise<Job | null> {
       for update skip locked
       limit 1
     )
-    returning id, kind, subject_id as "subjectId", status, attempts,
-      max_attempts as "maxAttempts", last_error as "lastError", run_after as "runAfter",
-      locked_at as "lockedAt", locked_by as "lockedBy", created_at as "createdAt"`);
-  return result.rows[0] ?? null;
+    returning id`);
+  const id = result.rows[0]?.id;
+  if (!id) return null;
+  const job = await db.query.jobs.findFirst({ where: eq(schema.jobs.id, id) });
+  if (!job) throw new Error(`Claimed job ${id} could not be read back.`);
+  return job;
 }
 
 export async function completeJob(db: Db, id: string): Promise<void> {
@@ -44,7 +50,7 @@ export async function failJob(db: Db, job: Job, error: string): Promise<"requeue
       lastError: error,
       lockedAt: null,
       lockedBy: null,
-      runAfter: exhausted ? job.runAfter : new Date(Date.now() + 30_000 * job.attempts),
+      ...(exhausted ? {} : { runAfter: new Date(Date.now() + 30_000 * job.attempts) }),
     })
     .where(eq(schema.jobs.id, job.id));
   return exhausted ? "failed" : "requeued";
