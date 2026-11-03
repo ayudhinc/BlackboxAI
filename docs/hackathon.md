@@ -54,7 +54,7 @@ A clickable mock of the run-review screen exists as a private artifact: https://
 ## Submission checklist
 
 - [x] Working demo, live: https://blackboxai-ayudh-incs-projects.vercel.app (hosted upload verified end to end on 2026-11-03)
-- [x] Demo video: `recordings/video/blackboxai-demo.mp4`, 2:58, captions burned in plus `blackboxai-demo.srt`. Uploaded unlisted at https://youtu.be/TIgWFTWjKFY with the captions. Re-record with `pnpm demo-video`.
+- [x] Demo video: `recordings/video/blackboxai-demo.mp4`, 2:58, captions burned in plus `blackboxai-demo.srt`. Uploaded unlisted at https://youtu.be/50b9BtOO03s with the captions (re-recorded 2026-11-03 after task text was redacted). Re-record with `pnpm demo-video`.
 - [x] Repo public: https://github.com/ayudhinc/BlackboxAI (2026-11-03)
 - [x] Repo with README, setup commands and architecture summary
 - [x] Track selected: Indie Developer

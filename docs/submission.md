@@ -11,7 +11,7 @@ Answers for the form at https://cerebralvalley.ai/e/meta-ai-developer-hackathon/
 | Problem statement | Push the Frontier |
 | Most Viral Track (X post) | — |
 | Public GitHub repository | https://github.com/ayudhinc/BlackboxAI (must be public before submitting) |
-| 3-minute demo video | https://youtu.be/TIgWFTWjKFY (unlisted, 2:58, English captions uploaded from `blackboxai-demo.srt`) |
+| 3-minute demo video | https://youtu.be/50b9BtOO03s (unlisted, 2:58, English captions uploaded from `blackboxai-demo.srt`). The first upload, which showed the card number in the D02 task heading, is set to private. |
 
 ## Project description
 
