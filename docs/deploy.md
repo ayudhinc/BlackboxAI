@@ -2,7 +2,7 @@
 
 Go-ahead given 2026-11-01. Steps marked **you** need Dushyant's accounts or hands: passwords, payment details and account creation are his alone.
 
-## Status (2026-11-02)
+## Status (2026-11-03)
 
 | Piece | State |
 |---|---|
@@ -10,8 +10,8 @@ Go-ahead given 2026-11-01. Steps marked **you** need Dushyant's accounts or hand
 | Neon | Project `blackboxai` (`winter-voice-41686139`), org Ayudh, aws-us-east-1, all migrations applied |
 | Vercel | Project `blackboxai` (team ayudh-incs-projects), root `apps/web`, connected to the repo; production build READY at `https://blackboxai-ayudh-incs-projects.vercel.app`. Env set: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `DAILY_BUDGET_USD`. R2 variables set too. Deployment Protection is off; the app's own gate holds (pages redirect to `/login`, APIs return 401). |
 | R2 | Bucket `blackboxai` (private, Western North America) created, with CORS allowing PUT and GET from the production origin. Account API token "BlackboxAI R2 Account Token" created (Object Read & Write, this bucket only). Keys in `.env` and in Vercel's environment |
-| Fly | Signed in. **Blocked on billing:** org `ayudh` has one open invoice, GWTL7RNT-0003 (September 2026, $38.79 remaining); the later invoice is paid. Fly refuses app creation until it is settled |
-| Operator account | Not created: Dushyant's password |
+| Fly | App `blackbox-worker` (org ayudh, iad), one shared-cpu-1x 1 GB machine. Secrets set from `.env` and neonctl. Health check passing |
+| Operator account | Created by Dushyant |
 
 ## What runs where
 
@@ -44,6 +44,7 @@ The sandbox stays on the laptop. The hosted app verifies any uploaded recording,
    `DATABASE_URL`, `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `BETTER_AUTH_URL` (the production URL), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `DAILY_BUDGET_USD`.
 8. **You:** create the operator account against Neon. It asks for the password on the terminal:
    `DATABASE_URL="$(neonctl connection-string --project-id winter-voice-41686139 --pooled)" pnpm create-operator <email> "<name>"`
+   The worker polls the job table every second, so Neon's compute stays awake while the worker runs (about 24 CU-hours a day at 1 CU). Stop the machine after judging: `fly machine stop -a blackbox-worker <id>`.
 9. Sign in on the hosted URL, compile and sign off the two demo policies, and upload one recording. Done when the run reaches a verdict.
 
 ## Never
