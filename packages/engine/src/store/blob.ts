@@ -6,6 +6,12 @@ import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 
 export interface BlobStore {
+  /**
+   * Which backend this is. Branch on this, never on instanceof: Next.js dev
+   * reloads keep a store on globalThis across copies of these classes, so an
+   * instanceof check silently fails after any reload.
+   */
+  readonly kind: "local" | "r2";
   put(key: string, body: Uint8Array | string, contentType: string): Promise<void>;
   get(key: string): Promise<Buffer>;
   /** Copy a stored object to a local file (the pipeline needs files for ffmpeg). */
@@ -13,6 +19,7 @@ export interface BlobStore {
 }
 
 export class LocalBlobStore implements BlobStore {
+  readonly kind = "local" as const;
   constructor(private readonly root: string) {}
 
   private path(key: string): string {

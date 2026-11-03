@@ -62,7 +62,7 @@ export type { RegressionDiff, RunSnapshot } from "./regress/regress.ts";
 export { regress } from "./regress/regress.ts";
 export type { BlobStore } from "./store/blob.ts";
 export { defaultLocalStore, keys, LocalBlobStore } from "./store/blob.ts";
-export { repoRoot, storeFromEnv } from "./store/factory.ts";
+export { isLocal, isR2, repoRoot, storeFromEnv } from "./store/factory.ts";
 export type { R2Config } from "./store/r2.ts";
 export { R2BlobStore } from "./store/r2.ts";
 export { tracksFromSam } from "./track/sam-tracks.ts";

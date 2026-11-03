@@ -1,6 +1,6 @@
 import { newId } from "@blackbox/contracts";
 import { schema } from "@blackbox/db";
-import { keys, R2BlobStore } from "@blackbox/engine";
+import { isR2, keys } from "@blackbox/engine";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { operatorOr401 } from "@/lib/auth";
@@ -70,9 +70,8 @@ export async function POST(req: Request) {
       recordingKey: keys.recording(runId),
     });
   const s = store();
-  const url =
-    s instanceof R2BlobStore
-      ? await s.presignPut(keys.recording(runId), b.contentType)
-      : `/api/uploads/${runId}`;
+  const url = isR2(s)
+    ? await s.presignPut(keys.recording(runId), b.contentType)
+    : `/api/uploads/${runId}`;
   return NextResponse.json({ runId, upload: { url, method: "PUT", contentType: b.contentType } });
 }

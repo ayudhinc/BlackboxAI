@@ -1,4 +1,4 @@
-import { keys, R2BlobStore } from "@blackbox/engine";
+import { isR2, keys } from "@blackbox/engine";
 import { NextResponse } from "next/server";
 import { operatorOr401 } from "@/lib/auth";
 import { store } from "@/lib/server";
@@ -15,8 +15,7 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
   const s = store();
-  if (s instanceof R2BlobStore)
-    return NextResponse.redirect(await s.presignGet(keys.frame(runId, n), 3600));
+  if (isR2(s)) return NextResponse.redirect(await s.presignGet(keys.frame(runId, n), 3600));
   try {
     const bytes = await s.get(keys.frame(runId, n));
     return new NextResponse(new Uint8Array(bytes), {

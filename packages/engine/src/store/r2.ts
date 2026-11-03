@@ -13,6 +13,7 @@ export type R2Config = {
 };
 
 export class R2BlobStore implements BlobStore {
+  readonly kind = "r2" as const;
   private readonly s3: S3Client;
   private readonly bucket: string;
 

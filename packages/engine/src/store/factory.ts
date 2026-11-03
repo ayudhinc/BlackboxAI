@@ -15,25 +15,37 @@ export function repoRoot(from = process.cwd()): string {
 }
 
 /**
- * R2 when R2_BUCKET is set, local disk otherwise. In production a missing R2
- * configuration is a deploy error, never a silent fallback to local disk.
+ * Production stores in R2 and refuses to fall back to local disk. Development
+ * stores on local disk unless BLOB_STORE=r2, so R2 keys sitting in the root
+ * .env never split a local web app (disk) from a local worker (R2).
  */
 export function storeFromEnv(env: NodeJS.ProcessEnv = process.env): BlobStore {
-  if (env.R2_BUCKET) {
-    const need = ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"].filter(
+  const useR2 = env.NODE_ENV === "production" || env.BLOB_STORE === "r2";
+  if (useR2) {
+    const need = ["R2_BUCKET", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"].filter(
       (k) => !env[k],
     );
-    if (need.length > 0) throw new Error(`R2 is configured but missing ${need.join(", ")}`);
+    if (need.length > 0)
+      throw new Error(
+        `R2 storage is required (production, or BLOB_STORE=r2) but ${need.join(", ")} is not set.`,
+      );
     return new R2BlobStore({
       accountId: env.R2_ACCOUNT_ID as string,
       accessKeyId: env.R2_ACCESS_KEY_ID as string,
       secretAccessKey: env.R2_SECRET_ACCESS_KEY as string,
-      bucket: env.R2_BUCKET,
+      bucket: env.R2_BUCKET as string,
     });
   }
-  if (env.NODE_ENV === "production")
-    throw new Error("R2_BUCKET is not set. Production never stores on local disk.");
   return new LocalBlobStore(
     env.BLOB_LOCAL_DIR ?? join(/* turbopackIgnore: true */ repoRoot(), ".data", "blobs"),
   );
+}
+
+/** R2 narrowing by kind; see BlobStore.kind for why not instanceof. */
+export function isR2(s: BlobStore): s is R2BlobStore {
+  return s.kind === "r2";
+}
+
+export function isLocal(s: BlobStore): s is LocalBlobStore {
+  return s.kind === "local";
 }
