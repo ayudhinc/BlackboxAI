@@ -5,13 +5,12 @@
  * low confidence routes the run to a human.
  */
 import { readFile } from "node:fs/promises";
-import type { Rule, Step, Verdict, Violation } from "@blackbox/contracts";
+import { type Rule, redact, type Step, type Verdict, type Violation } from "@blackbox/contracts";
 import { z } from "zod";
 import { REVIEW_BELOW_CONFIDENCE } from "../check/checkers.ts";
 import type { MetaClient } from "../meta/client.ts";
 import { MODELS } from "../meta/models.ts";
 import type { ChatContentPart } from "../meta/transport.ts";
-import { redact } from "../narrate/narrate.ts";
 
 export const VERDICT_CHECKER = `verdict@1.0.0 (${MODELS.spark})`;
 export const AUTO_VERDICT_MIN_CONFIDENCE = 0.8;

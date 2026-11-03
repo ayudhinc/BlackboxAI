@@ -1,5 +1,6 @@
+import { redact } from "@blackbox/contracts";
 import { describe, expect, it } from "vitest";
-import { type Narration, newButtonFrames, redact, toSteps } from "./narrate.ts";
+import { type Narration, newButtonFrames, toSteps } from "./narrate.ts";
 
 describe("redact", () => {
   it("removes card numbers, SSNs and account numbers", () => {

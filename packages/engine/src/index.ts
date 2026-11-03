@@ -51,7 +51,7 @@ export {
 } from "./meta/models.ts";
 export type { ChatMessage, ChatRequest, ChatResult, MetaTransport } from "./meta/transport.ts";
 export { createMetaTransport, DEFAULT_BASE_URL } from "./meta/transport.ts";
-export { narrate, redact, toSteps } from "./narrate/narrate.ts";
+export { narrate, toSteps } from "./narrate/narrate.ts";
 export { mapRuntimeEvents, parseRuntimeJsonl } from "./native/map-events.ts";
 export type { PipelineDeps } from "./pipeline/process-run.ts";
 export { InputError, processRun, TRACK_PHRASES, userFacing } from "./pipeline/process-run.ts";

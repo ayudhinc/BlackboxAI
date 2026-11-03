@@ -1,10 +1,18 @@
 /**
  * Storage for the contracts in @blackbox/contracts. Column names follow the
  * contract fields; jsonb holds arrays that are always read whole.
+ *
+ * Rule: every column that holds free text (anything a person, an agent or a
+ * model wrote) is declared with freeText(), never text(). freeText redacts
+ * card, SSN and account numbers on every insert and update, so no writer can
+ * store one. schema.test.ts fails when a plain text() column is added without
+ * being listed there as an identifier or a fixed vocabulary.
  */
+import { redact } from "@blackbox/contracts";
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -16,11 +24,17 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+/** Text column that redacts sensitive numbers on the way into the database. */
+export const freeText = customType<{ data: string; driverData: string }>({
+  dataType: () => "text",
+  toDriver: (value) => redact(value).text,
+});
+
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 
 export const policies = pgTable("policies", {
   id: text("id").primaryKey(),
-  title: text("title").notNull(),
+  title: freeText("title").notNull(),
   sourceKey: text("source_key"),
   status: text("status", {
     enum: ["compiling", "awaiting_signoff", "signed_off", "failed"],
@@ -35,7 +49,7 @@ export const rules = pgTable(
       .notNull()
       .references(() => policies.id, { onDelete: "cascade" }),
     id: text("id").notNull(), // "R2", unique within a policy
-    text: text("text").notNull(),
+    text: freeText("text").notNull(),
     type: text("type", {
       enum: [
         "app_allowlist",
@@ -47,10 +61,10 @@ export const rules = pgTable(
       ],
     }).notNull(),
     status: text("status", { enum: ["ready", "needs_clarification"] }).notNull(),
-    clarification: text("clarification"),
+    clarification: freeText("clarification"),
     params: jsonb("params").$type<Record<string, unknown>>().notNull(),
     sourcePage: integer("source_page").notNull(),
-    sourceQuote: text("source_quote").notNull(),
+    sourceQuote: freeText("source_quote").notNull(),
     signedOffBy: text("signed_off_by"),
     signedOffAt: timestamp("signed_off_at", { withTimezone: true }),
   },
@@ -62,10 +76,10 @@ export const runs = pgTable(
   {
     id: text("id").primaryKey(),
     taskId: text("task_id").notNull(),
-    task: text("task").notNull(),
+    task: freeText("task").notNull(),
     agentVendor: text("agent_vendor").notNull(),
     agentModel: text("agent_model").notNull(),
-    surface: text("surface").notNull(),
+    surface: freeText("surface").notNull(),
     mode: text("mode", { enum: ["video", "native"] }).notNull(),
     policyId: text("policy_id").references(() => policies.id),
     status: text("status", {
@@ -82,12 +96,12 @@ export const runs = pgTable(
     }).notNull(),
     recordingKey: text("recording_key"),
     durationMs: integer("duration_ms").notNull().default(0),
-    agentClaim: text("agent_claim"),
+    agentClaim: freeText("agent_claim"),
     overlays: jsonb("overlays")
       .$type<Array<{ label: string; box: [number, number, number, number] }>>()
       .notNull()
       .default([]),
-    failure: text("failure"),
+    failure: freeText("failure"),
     createdAt: createdAt(),
   },
   (t) => [index("runs_task_idx").on(t.taskId, t.createdAt)],
@@ -101,16 +115,16 @@ export const steps = pgTable(
       .references(() => runs.id, { onDelete: "cascade" }),
     n: integer("n").notNull(),
     tMs: integer("t_ms").notNull(),
-    app: text("app").notNull(),
+    app: freeText("app").notNull(),
     action: text("action", {
       enum: ["click", "type", "navigate", "key", "scroll", "claim"],
     }).notNull(),
-    target: text("target").notNull(),
-    field: text("field"),
-    observedAfter: text("observed_after").notNull(),
+    target: freeText("target").notNull(),
+    field: freeText("field"),
+    observedAfter: freeText("observed_after").notNull(),
     dialogOpened: boolean("dialog_opened").notNull(),
     screenSignature: text("screen_signature"),
-    screenAfter: text("screen_after"),
+    screenAfter: freeText("screen_after"),
     madeProgress: boolean("made_progress"),
     source: text("source", { enum: ["video", "native"] }).notNull(),
     confidence: real("confidence").notNull(),
@@ -149,12 +163,12 @@ export const runtimeEvents = pgTable(
     seq: integer("seq").notNull(),
     tMs: integer("t_ms").notNull(),
     pid: integer("pid").notNull(),
-    window: text("window").notNull(),
+    window: freeText("window").notNull(),
     event: text("event").notNull(),
     role: text("role"),
-    name: text("name"),
-    value: text("value"),
-    text: text("text"),
+    name: freeText("name"),
+    value: freeText("value"),
+    text: freeText("text"),
   },
   (t) => [primaryKey({ columns: [t.runId, t.seq] })],
 );
@@ -170,7 +184,7 @@ export const violations = pgTable(
     stepN: integer("step_n").notNull(),
     kind: text("kind", { enum: ["ok", "violation", "review"] }).notNull(),
     title: text("title").notNull(),
-    detail: text("detail").notNull(),
+    detail: freeText("detail").notNull(),
     evidenceFrames: jsonb("evidence_frames").$type<number[]>().notNull(),
     checker: text("checker").notNull(),
   },
@@ -191,11 +205,11 @@ export const verdicts = pgTable(
       enum: ["completed", "completed_with_violations", "not_completed", "needs_review"],
     }).notNull(),
     confidence: real("confidence").notNull(),
-    rationale: text("rationale").notNull(),
+    rationale: freeText("rationale").notNull(),
     evidenceFrames: jsonb("evidence_frames").$type<number[]>().notNull(),
     decidedBy: text("decided_by", { enum: ["auto", "reviewer"] }).notNull(),
     reviewer: text("reviewer"),
-    reviewReason: text("review_reason"),
+    reviewReason: freeText("review_reason"),
     createdAt: createdAt(),
   },
   (t) => [index("verdicts_run_idx").on(t.runId, t.createdAt)],
@@ -217,7 +231,7 @@ export const lineage = pgTable(
     costUsd: real("cost_usd").notNull(),
     latencyMs: integer("latency_ms").notNull(),
     attempt: integer("attempt").notNull(),
-    error: text("error"),
+    error: freeText("error"),
     createdAt: createdAt(),
   },
   (t) => [index("lineage_run_idx").on(t.runId), index("lineage_created_idx").on(t.createdAt)],
@@ -233,7 +247,7 @@ export const jobs = pgTable(
     status: text("status", { enum: ["queued", "running", "done", "failed"] }).notNull(),
     attempts: integer("attempts").notNull().default(0),
     maxAttempts: integer("max_attempts").notNull().default(2),
-    lastError: text("last_error"),
+    lastError: freeText("last_error"),
     runAfter: timestamp("run_after", { withTimezone: true }).notNull().defaultNow(),
     lockedAt: timestamp("locked_at", { withTimezone: true }),
     lockedBy: text("locked_by"),

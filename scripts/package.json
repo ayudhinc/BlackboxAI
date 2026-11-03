@@ -14,7 +14,8 @@
     "agent-run": "tsx src/agent-run.ts",
     "create-operator": "tsx src/create-operator.ts",
     "seed-dev-operator": "tsx src/seed-dev-operator.ts",
-    "demo-video": "tsx src/demo-video.ts"
+    "demo-video": "tsx src/demo-video.ts",
+    "redact-stored": "tsx src/redact-stored.ts"
   },
   "dependencies": {
     "@blackbox/auth": "workspace:*",

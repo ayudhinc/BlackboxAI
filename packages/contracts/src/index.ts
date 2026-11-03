@@ -6,6 +6,7 @@
 import { z } from "zod";
 
 export * from "./ids.ts";
+export * from "./redact.ts";
 
 const id = z.string().min(1);
 const unit = z.number().min(0).max(1);
